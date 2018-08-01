@@ -35,7 +35,6 @@ update msg model =
 splitSourceCode : String -> List String
 splitSourceCode s = String.split " " s
             |> List.map (\s -> s++" ")
-            --|> List.map (\s -> span [ onSpanClick OnSpanClick ] [text (s++" ")])
 
 markSameOccurrences : String -> List String -> List (Html Msg)
 markSameOccurrences markedText l = List.map (\s -> if s==markedText then createMarkedSpan s else createUnmarkedSpan s) l
@@ -44,7 +43,7 @@ createMarkedSpan : String -> Html Msg
 createMarkedSpan t = span [ onSpanClick OnSpanClick, markedSpanStyle ] [text t]
 
 createUnmarkedSpan : String -> Html Msg
-createUnmarkedSpan t = span [ onSpanClick OnSpanClick ] [text t]
+createUnmarkedSpan t = span [ onSpanClick OnSpanClick, unmarkedSpanStyle ] [text t]
 
 -- VIEW
 
@@ -53,16 +52,12 @@ view model = Html.div [ mainContainerStyle ] [
   div [ containerStyle ]
   [
     div [  ] [
-      textarea [  textareaStyle, rows 10, cols 50, onTextAreaInput OnCodeInput ] [  ]
+      textarea [  textareaStyle, rows 10, cols 50, onInput OnCodeInput ] [  ]
     ],
     div [ formattedCodeContainerStyle ] (model.splitSourceCode)
   ]
  ]
 
-
-onTextAreaInput : (String -> msg) -> Html.Attribute msg
-onTextAreaInput tagger =
-  Html.Events.on "input" (Json.Decode.map tagger decodeValueAttr)
 
 onSpanClick : (String -> msg) -> Html.Attribute msg
 onSpanClick tagger =
@@ -116,5 +111,12 @@ markedSpanStyle =
   style
     [ ("color", "#FF1744")
     , ("font-weight", "bold")
+    , ("font-family", "monospace")
+    ]
+
+unmarkedSpanStyle : Html.Attribute msg
+unmarkedSpanStyle =
+  style
+    [ ("color", "white")
     , ("font-family", "monospace")
     ]
