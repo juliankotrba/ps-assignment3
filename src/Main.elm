@@ -2,6 +2,7 @@ import Html exposing (Html, div, input, textarea, text, span)
 import Html.Events exposing(onInput)
 import Html.Attributes exposing (..)
 import Json.Decode
+import Parser
 
 main = Html.beginnerProgram { model = model, view = view, update = update }
 
