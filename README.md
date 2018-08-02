@@ -18,7 +18,7 @@ elm-reactor 0.18.0
 Listening on http://localhost:8000
 ```
 
-The tests can be started with the following command
+The tests can be started with the following command inside the root directory
 
 ```console
 foo@bar:~$ elm-test
