@@ -16,12 +16,7 @@ none _ = []
 -- Parser combinators
 
 token : a -> Parse a a
-token t l =
-  case l of
-    x::xs ->
-      if (x==t) then [(t,xs)]
-      else []
-    _ -> []
+token t l = spot (\x -> x==t) l
 
 spot : (a -> Bool) -> Parse a a
 spot p l = case l of
