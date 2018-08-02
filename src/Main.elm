@@ -28,13 +28,16 @@ update : Msg -> Model -> Model
 update msg model =
   case msg of
     Reset -> { model | plainSourceCode = "", splitSourceCode = [] }
-    OnSpanClick innerText -> { model | splitSourceCode = (markSameOccurrences innerText (splitSourceCode model.plainSourceCode )) }
-    OnCodeInput changedCode -> { model | plainSourceCode = changedCode, splitSourceCode = List.map (\s->createUnmarkedSpan s) (splitSourceCode model.plainSourceCode)}
+    OnSpanClick innerText ->
+      { model | splitSourceCode = (markSameOccurrences innerText (splitSourceCode model.plainSourceCode )) }
+    OnCodeInput changedCode ->
+      { model | plainSourceCode = changedCode, splitSourceCode =
+        List.map (\s->createUnmarkedSpan s) (splitSourceCode model.plainSourceCode)}
 
 
 splitSourceCode : String -> List String
 splitSourceCode s = String.split " " s
-            |> List.map (\s -> s++" ")
+                 |> List.map (\s -> s++" ")
 
 markSameOccurrences : String -> List String -> List (Html Msg)
 markSameOccurrences markedText l = List.map (\s -> if s==markedText then createMarkedSpan s else createUnmarkedSpan s) l
