@@ -49,3 +49,15 @@ spotTests =
         [ test "The token function is now just calling the spot function with an equals check lambda function as an argument. So the tokenTests are already testing the spot implementation." <|
             \_ -> "xyz"  |> Expect.equal "xyz"
         ]
+
+altTests =
+    describe "alt function tests"
+      [ test "Parse a digit or a letter from \"(xyz\" should fail" <|
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "(xyz") |> Expect.equal []
+      , test "Parse a digit or a letter from \"xyz\" should succeed" <|
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "xyz") |> Expect.equal [('x',String.toList "yz")]
+      , test "Parse a digit or a letter from \"1yz\" should succeed" <|
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "1yz") |> Expect.equal [('1',String.toList "yz")]
+      , test "Parse a digit or a letter from an empty string should fail" <|
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal []        
+      ]
