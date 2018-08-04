@@ -59,5 +59,15 @@ altTests =
       , test "Parse a digit or a letter from \"1yz\" should succeed" <|
           \_ -> Parser.alt Parser.digit Parser.letter (String.toList "1yz") |> Expect.equal [('1',String.toList "yz")]
       , test "Parse a digit or a letter from an empty string should fail" <|
-          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal []        
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal []
+      ]
+
+seqTests =
+    describe ">*> function tests"
+      [ test "Parse a digit and a letter in this specific order from \"1(\" should fail" <|
+          \_ ->  Parser.seq Parser.digit Parser.letter (String.toList "1(") |> Expect.equal []
+      , test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
+          \_ ->  Parser.seq Parser.letter Parser.digit (String.toList "(1") |> Expect.equal []
+      , test "Parse a opening curly brace and a digit in this specific order from \"{1\" should succeed" <|
+          \_ ->  Parser.seq Parser.openingCurlyBrace Parser.digit (String.toList "{1") |> Expect.equal [(('{','1'), String.toList "23")]
       ]
