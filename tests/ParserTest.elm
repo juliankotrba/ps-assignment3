@@ -21,11 +21,11 @@ suceedTests =
 failTests =
     describe "fail function tests"
       [ test "fail with input [] should fail" <|
-          \_ -> Parser.none [] |> Expect.equal []
+          \_ -> Parser.fail [] |> Expect.equal []
       , test "fail with input ['a', 'b', c''] should fail" <|
-          \_ -> Parser.none [] |> Expect.equal []
+          \_ -> Parser.fail [] |> Expect.equal []
       , test "fail with input [1,2,3] should fail" <|
-          \_ -> Parser.none [] |> Expect.equal []
+          \_ -> Parser.fail [] |> Expect.equal []
       ]
 
 tokenTests =

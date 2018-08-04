@@ -12,8 +12,8 @@ type alias Parse a b  = List a -> List (b, List a)
 succeed : b -> Parse a b
 succeed val inp = [(val, inp)]
 
-none : Parse a b
-none _ = []
+fail : Parse a b
+fail _ = []
 
 token : a -> Parse a a
 token t l = spot ((==) t) l
@@ -22,8 +22,8 @@ spot : (a -> Bool) -> Parse a a
 spot p l = case l of
   x::xs ->
     if p x then succeed x xs
-    else (none l)
-  _ ->  none l
+    else (fail l)
+  _ ->  fail l
 
 -- Parser combinators
 
