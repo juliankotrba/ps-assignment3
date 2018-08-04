@@ -18,13 +18,13 @@ suceedTests =
           \_ -> Parser.succeed 'x' ['x','y','z'] |> Expect.equal [('x',['x','y','z'])]
       ]
 
-noneTests =
-    describe "none function tests"
-      [ test "none with input [] should fail" <|
+failTests =
+    describe "fail function tests"
+      [ test "fail with input [] should fail" <|
           \_ -> Parser.none [] |> Expect.equal []
-      , test "none with input ['a', 'b', c''] should fail" <|
+      , test "fail with input ['a', 'b', c''] should fail" <|
           \_ -> Parser.none [] |> Expect.equal []
-      , test "none with input [1,2,3] should fail" <|
+      , test "fail with input [1,2,3] should fail" <|
           \_ -> Parser.none [] |> Expect.equal []
       ]
 
@@ -69,5 +69,5 @@ seqTests =
       , test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
           \_ ->  Parser.seq Parser.letter Parser.digit (String.toList "(1") |> Expect.equal []
       , test "Parse a opening curly brace and a digit in this specific order from \"{1\" should succeed" <|
-          \_ ->  Parser.seq Parser.openingCurlyBrace Parser.digit (String.toList "{1") |> Expect.equal [(('{','1'), String.toList "23")]
+          \_ ->  Parser.seq Parser.openingCurlyBrace Parser.digit (String.toList "{1") |> Expect.equal [(('{','1'), String.toList "")]
       ]
