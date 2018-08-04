@@ -16,7 +16,7 @@ none : Parse a b
 none _ = []
 
 token : a -> Parse a a
-token t l = spot (\x -> x==t) l
+token t l = spot ((==) t) l
 
 spot : (a -> Bool) -> Parse a a
 spot p l = case l of
