@@ -30,7 +30,6 @@ spot p l = case l of
 alt : Parse a b -> Parse a b -> Parse a b
 alt p1 p2 inp = p1 inp ++ p2 inp
 
-
 seq : Parse a b -> Parse a c -> Parse a (b,c)
 seq p1 p2 inp
         =
