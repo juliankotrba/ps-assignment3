@@ -54,8 +54,8 @@ digit = spot Char.isDigit
 letter : Parse Char Char
 letter = spot isLetter
 
-openCurlyBrace : Parse Char Char
-openCurlyBrace = spot ((==) '{')
+openingCurlyBrace : Parse Char Char
+openingCurlyBrace = spot ((==) '{')
 
 closingCurlyBrace : Parse Char Char
 closingCurlyBrace = spot ((==) '}')
