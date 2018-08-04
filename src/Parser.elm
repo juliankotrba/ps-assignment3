@@ -58,5 +58,11 @@ digit = spot Char.isDigit
 letter : Parse Char Char
 letter = spot isLetter
 
+openCurlyBrace : Parse Char Char
+openCurlyBrace = spot ((==) '{')
+
+closingCurlyBrace : Parse Char Char
+closingCurlyBrace = spot ((==) '}')
+
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
