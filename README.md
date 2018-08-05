@@ -12,7 +12,7 @@ Develop a syntax-aware editor for programs in the language as de-veloped in Assi
 
 For starting the project switch to the root directory and run
 
-```console
+```
 foo@bar:~$ elm-reactor
 elm-reactor 0.18.0
 Listening on http://localhost:8000
@@ -20,6 +20,6 @@ Listening on http://localhost:8000
 
 The tests can be started with the following command inside the root directory
 
-```console
+```
 foo@bar:~$ elm-test
 ```
