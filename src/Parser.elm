@@ -15,8 +15,8 @@ succeed val inp = [(val, inp)]
 fail : Parse a b
 fail _ = []
 
-token : a -> Parse a a
-token t l = spot ((==) t) l
+symbol : a -> Parse a a
+symbol t l = spot ((==) t) l
 
 spot : (a -> Bool) -> Parse a a
 spot p l = case l of
@@ -92,31 +92,31 @@ letter : Parse Char Char
 letter = spot isLetter
 
 period : Parse Char Char
-period = token '.'
+period = symbol '.'
 
 leftParenthesis : Parse Char Char
-leftParenthesis = token '('
+leftParenthesis = symbol '('
 
 rightParenthesis : Parse Char Char
-rightParenthesis = token ')'
+rightParenthesis = symbol ')'
 
 asterisk : Parse Char Char
-asterisk = token '*'
+asterisk = symbol '*'
 
 minus : Parse Char Char
-minus = token '-'
+minus = symbol '-'
 
 plus : Parse Char Char
-plus = token '+'
+plus = symbol '+'
 
 colon : Parse Char Char
-colon = token ':'
+colon = symbol ':'
 
 openingCurlyBrace : Parse Char Char
-openingCurlyBrace = token '{'
+openingCurlyBrace = symbol '{'
 
 closingCurlyBrace : Parse Char Char
-closingCurlyBrace = token '}'
+closingCurlyBrace = symbol '}'
 
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
