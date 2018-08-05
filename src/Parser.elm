@@ -106,6 +106,9 @@ asterisk = spot ((==) '*')
 minus : Parse Char Char
 minus = spot ((==) '-')
 
+plus : Parse Char Char
+plus = spot ((==) '+')
+
 colon : Parse Char Char
 colon = spot ((==) ':')
 
