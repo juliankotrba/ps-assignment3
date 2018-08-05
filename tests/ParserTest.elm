@@ -82,3 +82,15 @@ buildTests =
       , test "Parse a string from \"hello123\" and create an actual string should succeed" <|
           \_ ->  Parser.build Parser.string (\cs -> String.fromList cs) (String.toList "hello123") |> Expect.equal [("hello", String.toList "123")]
       ]
+      
+listTests =
+      describe "list function tests"
+        [ test "Parse a number from \"123xyz\" should succeed" <|
+            \_ -> Parser.list [] Parser.digit (String.toList "123xyz") |> Expect.equal [(String.toList "123", String.toList "xyz")]
+        , test "Parse a number from \"xyz\" should fail" <|
+            \_ -> Parser.list [] Parser.digit (String.toList "xyz") |> Expect.equal [([], String.toList "xyz")]
+        , test "Parse a string from \"xyz123\" should succeed" <|
+            \_ -> Parser.list [] Parser.letter (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
+        , test "Parse a string from \"123\" should fail" <|
+            \_ -> Parser.list [] Parser.letter (String.toList "123") |> Expect.equal [([], String.toList "123")]
+        ]
