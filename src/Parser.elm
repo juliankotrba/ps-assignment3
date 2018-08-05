@@ -47,6 +47,16 @@ seq p1 p2 inp
 
               _ -> []
 
+build : Parse a b -> (b -> c) -> Parse a c
+build p f inp
+        =
+          let
+            res = p inp
+          in
+            case res of
+              (val, rem)::_ -> [(f val, rem)]
+              _ -> []
+
 -- Parser
 
 digit : Parse Char Char
