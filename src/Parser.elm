@@ -83,7 +83,7 @@ list l p inp
       in
           case res of
             (val, rem1)::_ -> list (l ++ [val]) p rem1
-            _ -> succeed l inp
+            _ -> if (List.isEmpty l) then fail [] else succeed l inp
 
 digit : Parse Char Char
 digit = spot Char.isDigit

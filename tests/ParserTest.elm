@@ -61,6 +61,8 @@ altTests =
           \_ -> Parser.alt Parser.digit Parser.letter (String.toList "1yz") |> Expect.equal [('1',String.toList "yz")]
       , test "Parse a digit or a letter from an empty string should fail" <|
           \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal []
+      , test "Parse a number or a string from \"xyz123\" should succeed" <|
+          \_ -> Parser.alt Parser.number Parser.string (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]    
       ]
 
 seqTests =
@@ -88,11 +90,11 @@ listTests =
         [ test "Parse a number from \"123xyz\" should succeed" <|
             \_ -> Parser.list [] Parser.digit (String.toList "123xyz") |> Expect.equal [(String.toList "123", String.toList "xyz")]
         , test "Parse a number from \"xyz\" should fail" <|
-            \_ -> Parser.list [] Parser.digit (String.toList "xyz") |> Expect.equal [([], String.toList "xyz")]
+            \_ -> Parser.list [] Parser.digit (String.toList "xyz") |> Expect.equal []
         , test "Parse a string from \"xyz123\" should succeed" <|
             \_ -> Parser.list [] Parser.letter (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
         , test "Parse a string from \"123\" should fail" <|
-            \_ -> Parser.list [] Parser.letter (String.toList "123") |> Expect.equal [([], String.toList "123")]
+            \_ -> Parser.list [] Parser.letter (String.toList "123") |> Expect.equal []
         ]
 
 optionalListTests =
@@ -100,6 +102,6 @@ optionalListTests =
         [ test "Parse a string from \"123xyz\" should succeed with nothing parsed" <|
             \_ -> Parser.optionalList Parser.string (String.toList "123xyz") |> Expect.equal [([], String.toList "123xyz")]
         , test "Parse a string from \"xyz132\" should succeed" <|
-            \_ -> Parser.optionalList Parser.string (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]    
+            \_ -> Parser.optionalList Parser.string (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
 
         ]
