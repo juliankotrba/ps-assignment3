@@ -59,6 +59,17 @@ build p f inp
 
 -- Parser
 
+list : List b -> Parse a b -> Parse a (List b)
+list l p inp
+    =
+      let
+        res = p inp
+      in
+          case res of
+            (val, rem1)::_ -> list (l ++ [val]) p rem1
+            _ -> succeed l inp
+
+
 digit : Parse Char Char
 digit = spot Char.isDigit
 
