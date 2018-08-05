@@ -103,8 +103,8 @@ rightParenthesis = spot ((==) ')')
 asterisk : Parse Char Char
 asterisk = spot ((==) '*')
 
-dash : Parse Char Char
-dash = spot ((==) '-')
+minus : Parse Char Char
+minus = spot ((==) '-')
 
 colon : Parse Char Char
 colon = spot ((==) ':')
