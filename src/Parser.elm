@@ -92,7 +92,13 @@ letter : Parse Char Char
 letter = spot isLetter
 
 period : Parse Char Char
-period = spot ((==)'.')
+period = spot ((==) '.')
+
+leftParenthesis : Parse Char Char
+leftParenthesis = spot ((==) '(')
+
+rightParenthesis : Parse Char Char
+rightParenthesis = spot ((==) ')')
 
 openingCurlyBrace : Parse Char Char
 openingCurlyBrace = spot ((==) '{')
