@@ -59,6 +59,16 @@ build p f inp
 
 -- Parser
 
+optionalList : Parse a (List b) -> Parse a (List b)
+optionalList p inp
+      =
+        let
+          res = p inp
+        in
+          case res of
+            (val, rem)::_ -> succeed val rem
+            _ -> succeed [] inp
+
 number : Parse Char (List Char)
 number = (list [] digit)
 

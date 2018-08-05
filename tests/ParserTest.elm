@@ -94,3 +94,12 @@ listTests =
         , test "Parse a string from \"123\" should fail" <|
             \_ -> Parser.list [] Parser.letter (String.toList "123") |> Expect.equal [([], String.toList "123")]
         ]
+
+optionalListTests =
+      describe "optionalList function tests"
+        [ test "Parse a string from \"123xyz\" should succeed with nothing parsed" <|
+            \_ -> Parser.optionalList Parser.string (String.toList "123xyz") |> Expect.equal [([], String.toList "123xyz")]
+        , test "Parse a string from \"xyz132\" should succeed" <|
+            \_ -> Parser.optionalList Parser.string (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]    
+
+        ]
