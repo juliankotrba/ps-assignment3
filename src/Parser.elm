@@ -59,6 +59,9 @@ build p f inp
 
 -- Parser
 
+number : Parse Char (List Char)
+number = (list [] digit)
+
 list : List b -> Parse a b -> Parse a (List b)
 list l p inp
     =
