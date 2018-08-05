@@ -85,12 +85,14 @@ list l p inp
             (val, rem1)::_ -> list (l ++ [val]) p rem1
             _ -> succeed l inp
 
-
 digit : Parse Char Char
 digit = spot Char.isDigit
 
 letter : Parse Char Char
 letter = spot isLetter
+
+period : Parse Char Char
+period = spot ((==)'.')
 
 openingCurlyBrace : Parse Char Char
 openingCurlyBrace = spot ((==) '{')
