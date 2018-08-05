@@ -92,31 +92,31 @@ letter : Parse Char Char
 letter = spot isLetter
 
 period : Parse Char Char
-period = spot ((==) '.')
+period = token '.'
 
 leftParenthesis : Parse Char Char
-leftParenthesis = spot ((==) '(')
+leftParenthesis = token '('
 
 rightParenthesis : Parse Char Char
-rightParenthesis = spot ((==) ')')
+rightParenthesis = token ')'
 
 asterisk : Parse Char Char
-asterisk = spot ((==) '*')
+asterisk = token '*'
 
 minus : Parse Char Char
-minus = spot ((==) '-')
+minus = token '-'
 
 plus : Parse Char Char
-plus = spot ((==) '+')
+plus = token '+'
 
 colon : Parse Char Char
-colon = spot ((==) ':')
+colon = token ':'
 
 openingCurlyBrace : Parse Char Char
-openingCurlyBrace = spot ((==) '{')
+openingCurlyBrace = token '{'
 
 closingCurlyBrace : Parse Char Char
-closingCurlyBrace = spot ((==) '}')
+closingCurlyBrace = token '}'
 
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
