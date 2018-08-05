@@ -30,22 +30,22 @@ spot p l = case l of
 alt : Parse a b -> Parse a b -> Parse a b
 alt p1 p2 inp = p1 inp ++ p2 inp
 
-seq : Parse a b -> Parse a c -> Parse a (b,c)
-seq p1 p2 inp
+infixr 5 >*>
+(>*>) : Parse a b -> Parse a c -> Parse a (b,c)
+(>*>) p1 p2 inp
       =
-          let
-            res1 = p1 inp
-          in
-            case res1 of
-              (val1, rem1)::_ ->
-                  let
-                    res2 = p2 rem1
-                  in
-                    case res2 of
-                      (val2, rem2)::_ -> [((val1, val2), rem2)]
-                      _ -> []
-
-              _ -> []
+        let
+          res1 = p1 inp
+        in
+          case res1 of
+            (val1, rem1)::_ ->
+                let
+                  res2 = p2 rem1
+                in
+                  case res2 of
+                    (val2, rem2)::_ -> [((val1, val2), rem2)]
+                    _ -> []
+            _ -> []
 
 build : Parse a b -> (b -> c) -> Parse a c
 build p f inp

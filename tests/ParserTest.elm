@@ -2,7 +2,7 @@ module ParserTest exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
-import Parser
+import Parser exposing ((>*>))
 import Char exposing (toCode)
 
 suceedTests =
@@ -66,11 +66,11 @@ altTests =
 seqTests =
     describe ">*> function tests"
       [ test "Parse a digit and a letter in this specific order from \"1(\" should fail" <|
-          \_ ->  Parser.seq Parser.digit Parser.letter (String.toList "1(") |> Expect.equal []
+          \_ -> ((Parser.digit >*> Parser.letter) <| (String.toList "1(")) |> Expect.equal []
       , test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
-          \_ ->  Parser.seq Parser.letter Parser.digit (String.toList "(1") |> Expect.equal []
+          \_ ->  (Parser.letter >*> Parser.digit <| (String.toList "(1")) |> Expect.equal []
       , test "Parse a opening curly brace and a digit in this specific order from \"{1\" should succeed" <|
-          \_ ->  Parser.seq Parser.openingCurlyBrace Parser.digit (String.toList "{1") |> Expect.equal [(('{','1'), String.toList "")]
+          \_ ->  (Parser.openingCurlyBrace >*> Parser.digit <| (String.toList "{1")) |> Expect.equal [(('{','1'), String.toList "")]
       ]
 
 buildTests =
@@ -82,7 +82,7 @@ buildTests =
       , test "Parse a string from \"hello123\" and create an actual string should succeed" <|
           \_ ->  Parser.build Parser.string (\cs -> String.fromList cs) (String.toList "hello123") |> Expect.equal [("hello", String.toList "123")]
       ]
-      
+
 listTests =
       describe "list function tests"
         [ test "Parse a number from \"123xyz\" should succeed" <|
