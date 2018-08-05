@@ -106,6 +106,9 @@ asterisk = spot ((==) '*')
 dash : Parse Char Char
 dash = spot ((==) '-')
 
+colon : Parse Char Char
+colon = spot ((==) ':')
+
 openingCurlyBrace : Parse Char Char
 openingCurlyBrace = spot ((==) '{')
 
