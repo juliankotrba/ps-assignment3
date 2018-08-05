@@ -100,6 +100,9 @@ leftParenthesis = spot ((==) '(')
 rightParenthesis : Parse Char Char
 rightParenthesis = spot ((==) ')')
 
+asterisk : Parse Char Char
+asterisk = spot ((==) '*')
+
 openingCurlyBrace : Parse Char Char
 openingCurlyBrace = spot ((==) '{')
 
