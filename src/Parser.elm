@@ -112,6 +112,9 @@ plus = symbol '+'
 colon : Parse Char Char
 colon = symbol ':'
 
+space : Parse Char Char
+space = symbol ' '
+
 openingCurlyBrace : Parse Char Char
 openingCurlyBrace = symbol '{'
 
