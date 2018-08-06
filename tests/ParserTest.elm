@@ -30,18 +30,18 @@ failTests =
       ]
 
 symbolTests =
-    describe "token function tests"
-        [ test "Parse token 'x' from [] should fail" <|
+    describe "symbol function tests"
+        [ test "Parse symbol 'x' from [] should fail" <|
             \_ -> Parser.symbol 'x' []  |> Expect.equal []
-        , test "Parse token 'x' from ['a','b','c'] should fail" <|
+        , test "Parse symbol 'x' from ['a','b','c'] should fail" <|
             \_ -> Parser.symbol 'x' ['a','b','c'] |> Expect.equal []
-        , test "Parse token 'x' from ['x','b','c'] should succeed" <|
+        , test "Parse symbol 'x' from ['x','b','c'] should succeed" <|
             \_ -> Parser.symbol 'x' ['x','b','c'] |> Expect.equal [('x', ['b', 'c'])]
-        , test "Parse token 1 from [] should fail" <|
+        , test "Parse symbol 1 from [] should fail" <|
             \_ -> Parser.symbol 1 []  |> Expect.equal []
-        , test "Parse token from [2, 3] should fail" <|
+        , test "Parse symbol from [2, 3] should fail" <|
             \_ -> Parser.symbol 1 [2, 3]  |> Expect.equal []
-        , test "Parse token 1 from [1, 2, 3] should succeed" <|
+        , test "Parse symbol 1 from [1, 2, 3] should succeed" <|
             \_ -> Parser.symbol 1 [1, 2]  |> Expect.equal [(1, [2])]
         ]
 
@@ -104,4 +104,16 @@ optionalListTests =
         , test "Parse a string from \"xyz132\" should succeed" <|
             \_ -> Parser.optionalList Parser.string (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
 
+        ]
+
+tokenTests =
+      describe "token function tests"
+        [ test "Parse a token from \"_xyz123\" should fail" <|
+            \_ -> Parser.token (String.toList "_xyz123") |> Expect.equal []
+        , test "Parse a token from \"xyz123\" should succeed" <|
+            \_ -> Parser.token (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
+        , test "Parse a token from \"+xyz123\" should succeed" <|
+            \_ -> Parser.token (String.toList "+xyz123") |> Expect.equal [(String.toList "+x", String.toList "yz123")]
+        , test "Parse a token from \"*xyz123\" should succeed" <|
+            \_ -> Parser.token (String.toList "*xyz123") |> Expect.equal [(String.toList "*xyz", String.toList "123")]
         ]

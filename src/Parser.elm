@@ -120,3 +120,21 @@ closingCurlyBrace = symbol '}'
 
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
+
+{- Language specific parser
+
+Syntax of the language:
+
+<program> ::= { <rule> }
+    <rule> ::= <head> <body> ’.’
+    <head> ::= <atom>
+    <body> ::= { ’:’ <goal> }
+    <goal> ::= <atom>
+        | <pattern> ’=’ <pattern>
+        | ’$’ <pattern> <pattern> ’-’ <pattern> <pattern>
+    <atom> ::= <name> { <pattern> } ’-’ { <pattern> }
+    <name> ::= <token>
+    <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
+-}
+
+token = alt string (alt ( build (asterisk >*> string) (\(a,b)->a::b)) (build (plus >*> letter) (\(a,b)-> (a::b::[]))))
