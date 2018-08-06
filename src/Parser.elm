@@ -137,4 +137,10 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
-token = alt string (alt ( build (asterisk >*> string) (\(a,b)->a::b)) (build (plus >*> letter) (\(a,b)-> (a::b::[]))))
+token : Parse Char (List Char)
+token =
+  alt
+    string
+    (alt
+      (build (asterisk >*> string) (\(a,b)->a::b))
+      (build (plus >*> letter) (\(a,b)-> (a::b::[]))))
