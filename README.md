@@ -1,6 +1,6 @@
 # Third Assignment
 ## Short description
-Develop a syntax-aware editor for programs in the language as de-veloped in Assignment 2. The editor shall be written in a staticallytyped functional language like Haskell and ML. In addition to theusual functionality of an editor (loading, showing, modifying andstoring text), the editor shall highlight
+Develop a syntax-aware editor for programs in the language as de-veloped in Assignment 2. The editor shall be written in a staticallytyped functional language like Haskell and ML. In addition to theusual functionality of an editor (loading, showing, modifying and storing text), the editor shall highlight
 
 - [ ] obvious syntactic errors like unbalanced braces,
 - [ ] other occurrences of a variable or rule name currently pointedto by the cursor,
