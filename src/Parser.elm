@@ -59,8 +59,8 @@ build p f inp
 
 -- Parser
 
-many0 : Parse a (List b) -> Parse a (List b)
-many0 p inp
+option : Parse a (List b) -> Parse a (List b)
+option p inp
       =
         let
           res = p inp
@@ -140,8 +140,8 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
-pattern = build ((build leftParenthesis (\c->c::[])) >*> (many0 token)) (\(r1,r2) -> List.append r1 r2)
-          --  >*>
+--pattern = build ((build leftParenthesis (\c->c::[])) >*> (many0 token)) (\(r1,r2) -> List.append r1 r2)
+          --   >*>
 
 -- TODO: Parse a token as it is specified in the grammar above.
 token : Parse Char (List Char)
