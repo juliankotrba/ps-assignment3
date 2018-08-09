@@ -150,14 +150,14 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
---pattern = build ((build leftParenthesis (\c->c::[]))) >*> (many0 token) (\(r1,r2) -> List.append r1 r2)
---  (option number) >*> string
+pattern =
+  build ((build (build (leftParenthesis >*> many0TokenWithOptionalPlus) (\(res1,res2)->[res1]::res2)
+    >*>
+      optionalTokenWith) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
+        >*> rightParenthesis) (\(res1,res2)-> res1++[[res2]])
 
--- TODO: Parse a token as it is specified in the grammar above.
-token : Parse Char (List Char)
-token =
-  alt
-    string
-    (alt
-      (build (asterisk >*> string) (\(a,b)-> (a::b)))
-      (build (plus >*> string) (\(a,b)-> (a::b))))
+token = string
+
+many0TokenWithOptionalPlus = many0 [] (build((option (build plus (\c->c::[]))) >*> token) (\(r1,r2)->r1++r2))
+
+optionalTokenWith = option (build (asterisk >*> token) (\(res1,res2)->res1::res2))
