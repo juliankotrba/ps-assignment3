@@ -150,6 +150,8 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
+name = token
+
 pattern =
   build ((build (build (leftParenthesis >*> many0TokenWithOptionalPlus) (\(res1,res2)->[res1]::res2)
     >*>

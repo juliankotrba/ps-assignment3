@@ -103,8 +103,8 @@ many0Tests =
             \_ -> Parser.many0 [] Parser.string (String.toList "123xyz") |> Expect.equal [([], String.toList "123xyz")]
         , test "Parse a string from \"xyz132\" should succeed" <|
             \_ -> Parser.many0 [] Parser.string (String.toList "xyz123") |> Expect.equal [([['x','y','z']],['1','2','3'])]
-        , test "Parse multipe tokens from \"+x*y+z\" should succeed" <|
-            \_ -> Parser.many0 [] Parser.token (String.toList "+x*y+z") |> Expect.equal  [([['+','x'],['*','y'],['+','z']],[])]
+        {-, test "Parse multipe tokens from \"+x*y+z\" should succeed" <|
+            \_ -> Parser.many0 [] Parser.token (String.toList "+x*y+z") |> Expect.equal  [([['+','x'],['*','y'],['+','z']],[])]-}
         ]
 
 tokenTests =
@@ -113,10 +113,10 @@ tokenTests =
             \_ -> Parser.token (String.toList "_xyz123") |> Expect.equal []
         , test "Parse a token from \"xyz123\" should succeed" <|
             \_ -> Parser.token (String.toList "xyz123") |> Expect.equal [(String.toList "xyz", String.toList "123")]
-        , test "Parse a token from \"+xyz123\" should succeed" <|
-            \_ -> Parser.token (String.toList "+xyz123") |> Expect.equal [(String.toList "+xyz", String.toList "123")]
-        , test "Parse a token from \"*xyz123\" should succeed" <|
-            \_ -> Parser.token (String.toList "*xyz123") |> Expect.equal [(String.toList "*xyz", String.toList "123")]
+        {-, test "Parse a token from \"+xyz123\" should succeed" <|
+            \_ -> Parser.token (String.toList "+xyz123") |> Expect.equal [(String.toList "+xyz", String.toList "123")]-}
+        {-, test "Parse a token from \"*xyz123\" should succeed" <|
+            \_ -> Parser.token (String.toList "*xyz123") |> Expect.equal [(String.toList "*xyz", String.toList "123")]-}
         ]
 
 optionTests =
