@@ -69,6 +69,16 @@ option p inp
             (val, rem)::_ -> succeed val rem
             _ -> succeed [] inp
 
+--many0 : Parse a (List b) -> Parse a (List b)
+many0 l p inp =
+  let
+    res = p inp
+  in
+      case res of
+        ([], rem1)::_ -> succeed l inp
+        (val, rem1)::_ -> list (List.append l [val]) p rem1
+        _ -> succeed l inp
+
 number : Parse Char (List Char)
 number = (list [] digit)
 
@@ -140,8 +150,8 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
---pattern = build ((build leftParenthesis (\c->c::[])) >*> (many0 token)) (\(r1,r2) -> List.append r1 r2)
-          --   >*>
+--pattern = build ((build leftParenthesis (\c->c::[]))) >*> (many0 token) (\(r1,r2) -> List.append r1 r2)
+--  (option number) >*> string
 
 -- TODO: Parse a token as it is specified in the grammar above.
 token : Parse Char (List Char)
