@@ -5,30 +5,39 @@ import Char
 -- Based on Simon Thompson
 -- Haskell – The Craft of Functional Programming
 
-type alias Parse a b  = List a -> List (b, List a)
+type alias Parse a b  = List a -> Result String (List (b, List a))
 
 -- Parser primitives
 
 succeed : b -> Parse a b
-succeed val inp = [(val, inp)]
+succeed val inp = Ok [(val, inp)]
 
-fail : Parse a b
-fail _ = []
+fail : String -> Parse a b
+fail errMsg _ = Err errMsg
 
 symbol : a -> Parse a a
-symbol t l = spot ((==) t) l
+symbol t l = spot ("Token: " ++ toString t) ((==) t) l
 
-spot : (a -> Bool) -> Parse a a
-spot p l = case l of
+spot : String -> (a -> Bool) -> Parse a a
+spot d p l = case l of
   x::xs ->
     if p x then succeed x xs
-    else (fail l)
-  _ ->  fail l
+    else (fail ("Expecting: " ++ d) l)
+  _ ->  fail ("Expecting: " ++ d) l
 
 -- Parser combinators
 
 alt : Parse a b -> Parse a b -> Parse a b
-alt p1 p2 inp = p1 inp ++ p2 inp
+alt p1 p2 inp =
+  let
+    res1 = p1 inp
+    res2 = p2 inp
+  in
+      case (res1,res2) of
+        (Err e1, Err e2) -> Err <| "Expected to be " ++ e1 ++ " and " ++ e2
+        (Ok r1, Ok r2) -> Ok (r1++r2)
+        (Ok r1, _) -> Ok r1
+        (_, Ok r2) -> Ok r2
 
 infixr 5 >*>
 (>*>) : Parse a b -> Parse a c -> Parse a (b,c)
@@ -38,14 +47,16 @@ infixr 5 >*>
           res1 = p1 inp
         in
           case res1 of
-            (val1, rem1)::_ ->
+            Ok ((val1, rem1)::_) ->
                 let
                   res2 = p2 rem1
                 in
                   case res2 of
-                    (val2, rem2)::_ -> [((val1, val2), rem2)]
-                    _ -> []
-            _ -> []
+                    Ok ((val2, rem2)::_) -> Ok [((val1, val2), rem2)]
+                    Ok [] -> Ok []
+                    Err errMsg -> fail errMsg []
+            Err errMsg -> fail errMsg []
+            Ok [] -> Ok []
 
 build : Parse a b -> (b -> c) -> Parse a c
 build p f inp
@@ -54,8 +65,9 @@ build p f inp
             res = p inp
           in
             case res of
-              (val, rem)::_ -> [(f val, rem)]
-              _ -> []
+              Ok ((val, rem)::_) -> Ok [(f val, rem)]
+              Ok [] -> Ok []
+              Err errMsg -> fail errMsg []
 
 -- Parser
 
@@ -66,7 +78,7 @@ option p inp
           res = p inp
         in
           case res of
-            (val, rem)::_ -> succeed val rem
+            Ok ((val, rem)::_) -> succeed val rem
             _ -> succeed [] inp
 
 --many0 : Parse a (List b) -> Parse a (List b)
@@ -75,8 +87,8 @@ many0 l p inp =
     res = p inp
   in
       case res of
-        ([], rem1)::_ -> succeed l inp
-        (val, rem1)::_ -> list (List.append l [val]) p rem1
+        Ok (([], rem1)::_) -> succeed l inp
+        Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
         _ -> succeed l inp
 
 number : Parse Char (List Char)
@@ -92,14 +104,16 @@ list l p inp
         res = p inp
       in
           case res of
-            (val, rem1)::_ -> list (l ++ [val]) p rem1
-            _ -> if (List.isEmpty l) then fail [] else succeed l inp
+            Ok ((val, rem1)::_) -> list (l ++ [val]) p rem1
+            Ok [] -> succeed l inp
+            Err errMsg -> if (List.isEmpty l) then fail errMsg [] else succeed l inp
+            --_ -> if (List.isEmpty l) then fail "TODO" [] else succeed l inp
 
 digit : Parse Char Char
-digit = spot Char.isDigit
+digit = spot "Digit" Char.isDigit
 
 letter : Parse Char Char
-letter = spot isLetter
+letter = spot "Letter ([a-zA-Z])" isLetter
 
 period : Parse Char Char
 period = symbol '.'
