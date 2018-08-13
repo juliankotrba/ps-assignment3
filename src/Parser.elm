@@ -16,14 +16,14 @@ fail : String -> Parse a b
 fail errMsg _ = Err errMsg
 
 symbol : a -> Parse a a
-symbol t l = spot ("Token: " ++ toString t) ((==) t) l
+symbol t l = spot (toString t) ((==) t) l
 
 spot : String -> (a -> Bool) -> Parse a a
-spot d p l = case l of
+spot desc p l = case l of
   x::xs ->
     if p x then succeed x xs
-    else (fail ("Expecting: " ++ d) l)
-  _ ->  fail ("Expecting: " ++ d) l
+    else (fail desc l)
+  _ ->  fail desc l
 
 -- Parser combinators
 
@@ -34,7 +34,7 @@ alt p1 p2 inp =
     res2 = p2 inp
   in
       case (res1,res2) of
-        (Err e1, Err e2) -> Err <| "Expected to be " ++ e1 ++ " and " ++ e2
+        (Err e1, Err e2) -> Err <| e1 ++ " || " ++ e2
         (Ok r1, Ok r2) -> Ok (r1++r2)
         (Ok r1, _) -> Ok r1
         (_, Ok r2) -> Ok r2
@@ -106,14 +106,14 @@ list l p inp
           case res of
             Ok ((val, rem1)::_) -> list (l ++ [val]) p rem1
             Ok [] -> succeed l inp
-            Err errMsg -> if (List.isEmpty l) then fail errMsg [] else succeed l inp
+            Err errMsg -> if (List.isEmpty l) then fail ("Expecting list of " ++ errMsg) [] else succeed l inp
             --_ -> if (List.isEmpty l) then fail "TODO" [] else succeed l inp
 
 digit : Parse Char Char
-digit = spot "Digit" Char.isDigit
+digit = spot "([0-9])" Char.isDigit
 
 letter : Parse Char Char
-letter = spot "Letter ([a-zA-Z])" isLetter
+letter = spot "([a-zA-Z])" isLetter
 
 period : Parse Char Char
 period = symbol '.'
