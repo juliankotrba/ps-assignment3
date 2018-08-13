@@ -19,11 +19,12 @@ symbol : a -> Parse a a
 symbol t l = spot (toString t) ((==) t) l
 
 spot : String -> (a -> Bool) -> Parse a a
-spot desc p l = case l of
-  x::xs ->
-    if p x then succeed x xs
-    else (fail desc l)
-  _ ->  fail desc l
+spot desc p l =
+  case l of
+    x::xs ->
+      if p x then succeed x xs
+        else (fail desc l)
+    _ ->  fail desc l
 
 -- Parser combinators
 
@@ -33,63 +34,59 @@ alt p1 p2 inp =
     res1 = p1 inp
     res2 = p2 inp
   in
-      case (res1,res2) of
-        (Err e1, Err e2) -> Err <| e1 ++ " || " ++ e2
-        (Ok r1, Ok r2) -> Ok (r1++r2)
-        (Ok r1, _) -> Ok r1
-        (_, Ok r2) -> Ok r2
+    case (res1,res2) of
+      (Err e1, Err e2) -> Err <| e1 ++ " || " ++ e2
+      (Ok r1, Ok r2) -> Ok (r1++r2)
+      (Ok r1, _) -> Ok r1
+      (_, Ok r2) -> Ok r2
 
 infixr 5 >*>
 (>*>) : Parse a b -> Parse a c -> Parse a (b,c)
-(>*>) p1 p2 inp
-      =
+(>*>) p1 p2 inp=
+  let
+    res1 = p1 inp
+  in
+    case res1 of
+      Ok ((val1, rem1)::_) ->
         let
-          res1 = p1 inp
+          res2 = p2 rem1
         in
-          case res1 of
-            Ok ((val1, rem1)::_) ->
-                let
-                  res2 = p2 rem1
-                in
-                  case res2 of
-                    Ok ((val2, rem2)::_) -> Ok [((val1, val2), rem2)]
-                    Ok [] -> Ok []
-                    Err errMsg -> fail errMsg []
-            Err errMsg -> fail errMsg []
+          case res2 of
+            Ok ((val2, rem2)::_) -> Ok [((val1, val2), rem2)]
             Ok [] -> Ok []
+            Err errMsg -> fail errMsg []
+      Err errMsg -> fail errMsg []
+      Ok [] -> Ok []
 
 build : Parse a b -> (b -> c) -> Parse a c
-build p f inp
-        =
-          let
-            res = p inp
-          in
-            case res of
-              Ok ((val, rem)::_) -> Ok [(f val, rem)]
-              Ok [] -> Ok []
-              Err errMsg -> fail errMsg []
+build p f inp =
+  let
+    res = p inp
+  in
+    case res of
+      Ok ((val, rem)::_) -> Ok [(f val, rem)]
+      Ok [] -> Ok []
+      Err errMsg -> fail errMsg []
 
 -- Parser
 
 option : Parse a (List b) -> Parse a (List b)
-option p inp
-      =
-        let
-          res = p inp
-        in
-          case res of
-            Ok ((val, rem)::_) -> succeed val rem
-            _ -> succeed [] inp
+option p inp =
+  let
+    res = p inp
+  in
+    case res of
+      Ok ((val, rem)::_) -> succeed val rem
+      _ -> succeed [] inp
 
---many0 : Parse a (List b) -> Parse a (List b)
+many0 : List b -> Parse a b -> Parse a (List b)
 many0 l p inp =
   let
     res = p inp
   in
-      case res of
-        Ok (([], rem1)::_) -> succeed l inp
-        Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
-        _ -> succeed l inp
+    case res of
+      Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
+      _ -> succeed l inp
 
 number : Parse Char (List Char)
 number = (list [] digit)
@@ -98,16 +95,14 @@ string : Parse Char (List Char)
 string = list [] letter
 
 list : List b -> Parse a b -> Parse a (List b)
-list l p inp
-    =
-      let
-        res = p inp
-      in
-          case res of
-            Ok ((val, rem1)::_) -> list (l ++ [val]) p rem1
-            Ok [] -> succeed l inp
-            Err errMsg -> if (List.isEmpty l) then fail ("Expecting list of " ++ errMsg) [] else succeed l inp
-            --_ -> if (List.isEmpty l) then fail "TODO" [] else succeed l inp
+list l p inp =
+  let
+    res = p inp
+  in
+    case res of
+      Ok ((val, rem1)::_) -> list (l ++ [val]) p rem1
+      Ok [] -> succeed l inp
+      Err errMsg -> if (List.isEmpty l) then fail ("Expecting list of " ++ errMsg) [] else succeed l inp
 
 digit : Parse Char Char
 digit = spot "([0-9])" Char.isDigit
