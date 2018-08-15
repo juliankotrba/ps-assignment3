@@ -162,13 +162,25 @@ Syntax of the language:
 name = string
 
 pattern =
-  build ((build (build (leftParenthesis >*> many0TokenWithOptionalPlus) (\(res1,res2)->[res1]::res2)
-    >*>
-      optionalTokenWith) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
-        >*> rightParenthesis) (\(res1,res2)-> res1++[[res2]])
+  (build(
+  --> ’(’ { [ ’+’ ] <token> }
+  (wrapInList (wrapInList leftParenthesis) |>*>| many0TokenWithOptionalPlus)
+  >*>
+  --> [ ’*’ <token> ]
+  optionalTokenWithAsterisk) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
+  >*>
+  --> ’)’
+  (wrapInList (wrapInList rightParenthesis))
 
 token = letter
 
-many0TokenWithOptionalPlus = many0 [] (build((option (build plus (\c->c::[]))) >*> token) (\(r1,r2)->r1++[r2]))
+many0TokenWithOptionalPlus = many0 [] (option (wrapInList plus) |>*>| (wrapInList token))
 
-optionalTokenWith = option (build (asterisk >*> token) (\(res1,res2)->res1::[res2]))
+optionalTokenWithAsterisk = option <| (wrapInList asterisk) |>*>| string
+
+-- Helpers
+
+wrapInList p = build p (\c->[c])
+
+infixr 5 |>*>|
+(|>*>|) p1 p2 = build (p1 >*> p2) (\(res1,res2)->res1++res2)
