@@ -161,19 +161,18 @@ Syntax of the language:
 
 name = string
 
-  {-atom =
+atom =
   --> name
-  (wrapInList name)
+  (wrapInList (wrapInList name))
   |>*>|
   -- { <pattern> }
   many0Pattern
- |>*>|
+  |>*>|
   --> ’-’
-  (wrapInList minus)
+  (wrapInList (wrapInList (wrapInList minus)))
   |>*>|
   -- { <pattern> }
   many0Pattern
--}
 
 pattern =
   (build(
