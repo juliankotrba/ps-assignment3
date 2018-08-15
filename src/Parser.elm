@@ -131,6 +131,12 @@ plus = symbol '+'
 colon : Parse Char Char
 colon = symbol ':'
 
+equals : Parse Char Char
+equals = symbol '='
+
+dollar : Parse Char Char
+dollar = symbol '$'
+
 space : Parse Char Char
 space = symbol ' '
 
@@ -158,6 +164,60 @@ Syntax of the language:
     <name> ::= <token>
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
+
+rule =
+  --> <head>
+  (wrapInList head)
+  |>*>|
+  --> <body>
+  body
+  |>*>|
+  --> ’.’
+  (wrapInList (wrapInList (wrapInList (wrapInList period))))
+
+head = atom
+
+body =
+  many0 [] (
+    --> ’:’
+    (wrapInList (wrapInList (wrapInList colon)))
+    |>*>|
+    --> <goal>
+    goal
+  )
+
+goal =
+  alt goalFirstBranch
+  <|
+  alt (wrapInList goalSecondBranch) (wrapInList goalThirdBranch)
+
+goalFirstBranch = atom
+
+goalSecondBranch =
+  --> <pattern>
+  pattern
+  |>*>|
+  --> ’=’
+  (wrapInList (wrapInList equals))
+  |>*>|
+  --> <pattern>
+  pattern
+
+goalThirdBranch =
+  -->  ’$’
+  (wrapInList (wrapInList  dollar))
+  |>*>|
+  --> <pattern> <pattern>
+  twoPattern
+  |>*>|
+  --> ’-’
+  (wrapInList (wrapInList minus))
+  |>*>|
+  --> <pattern> <pattern>
+  twoPattern
+
+twoPattern = pattern |>*>| pattern
+
 
 name = string
 
