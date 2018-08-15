@@ -16,7 +16,7 @@ fail : String -> Parse a b
 fail errMsg _ = Err errMsg
 
 symbol : a -> Parse a a
-symbol t l = spot (toString t) ((==) t) l
+symbol t l = spot ("Expecting: " ++ toString t) ((==) t) l
 
 spot : String -> (a -> Bool) -> Parse a a
 spot desc p l =
