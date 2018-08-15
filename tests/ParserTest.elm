@@ -118,7 +118,7 @@ tokenTests =
         [ test "Parse a token from \"_xyz123\" should fail" <|
             \_ -> (unwrap <| Parser.token (String.toList "_xyz123")) |> Expect.equal []
         , test "Parse a token from \"xyz123\" should succeed" <|
-            \_ -> (unwrap <| Parser.token (String.toList "xyz123")) |> Expect.equal [(String.toList "xyz", String.toList "123")]
+            \_ -> (unwrap <| Parser.token (String.toList "xyz123")) |> Expect.equal [('x', String.toList "yz123")]
         {-, test "Parse a token from \"+xyz123\" should succeed" <|
             \_ -> Parser.token (String.toList "+xyz123") |> Expect.equal [(String.toList "+xyz", String.toList "123")]-}
         {-, test "Parse a token from \"*xyz123\" should succeed" <|

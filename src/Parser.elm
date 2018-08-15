@@ -159,7 +159,7 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
-name = token
+name = string
 
 pattern =
   build ((build (build (leftParenthesis >*> many0TokenWithOptionalPlus) (\(res1,res2)->[res1]::res2)
@@ -167,8 +167,8 @@ pattern =
       optionalTokenWith) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
         >*> rightParenthesis) (\(res1,res2)-> res1++[[res2]])
 
-token = string
+token = letter
 
-many0TokenWithOptionalPlus = many0 [] (build((option (build plus (\c->c::[]))) >*> token) (\(r1,r2)->r1++r2))
+many0TokenWithOptionalPlus = many0 [] (build((option (build plus (\c->c::[]))) >*> token) (\(r1,r2)->r1++[r2]))
 
-optionalTokenWith = option (build (asterisk >*> token) (\(res1,res2)->res1::res2))
+optionalTokenWith = option (build (asterisk >*> token) (\(res1,res2)->res1::[res2]))
