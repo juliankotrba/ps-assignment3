@@ -161,6 +161,20 @@ Syntax of the language:
 
 name = string
 
+  {-atom =
+  --> name
+  (wrapInList name)
+  |>*>|
+  -- { <pattern> }
+  many0Pattern
+ |>*>|
+  --> ’-’
+  (wrapInList minus)
+  |>*>|
+  -- { <pattern> }
+  many0Pattern
+-}
+
 pattern =
   (build(
   --> ’(’ { [ ’+’ ] <token> }
@@ -168,11 +182,13 @@ pattern =
   >*>
   --> [ ’*’ <token> ]
   optionalTokenWithAsterisk) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
-  >*>
+  |>*>|
   --> ’)’
   (wrapInList (wrapInList rightParenthesis))
 
 token = letter
+
+many0Pattern = many0 [] pattern
 
 many0TokenWithOptionalPlus = many0 [] (option (wrapInList plus) |>*>| (wrapInList token))
 
