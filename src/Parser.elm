@@ -177,7 +177,6 @@ buildDefault p = build p (\res -> Default <| String.fromList res)
 buildName p = build p (\res -> Name <| String.fromList res)
 buildSymbol p = build p (\res -> Symbol <| String.fromList res)
 
-
 {--}
 rule =
   --> <head>
@@ -197,8 +196,7 @@ body =
     (wrapInList(wrapInList (buildSymbol (wrapInList colon))))
     |>*>|
     --> <goal>
-    goal
-  )) (\c-> List.concat c)
+    goal)) (\c-> List.concat c)
 
 goal =
   alt goalFirstBranch
@@ -246,7 +244,6 @@ atom =
   |>*>|
   -- { <pattern> }
   many0Pattern
-
 
 pattern =
   (build(
