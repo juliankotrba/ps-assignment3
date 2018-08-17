@@ -165,26 +165,40 @@ Syntax of the language:
     <pattern> ::= ’(’ { [ ’+’ ] <token> } [ ’*’ <token> ] ’)’
 -}
 
+type SyntaxComponent
+  = Default String
+  | Variable String
+  | Name String
+  | Symbol String
+  | Error String
+
+buildVar p = build p (\res -> Variable <| String.fromList res)
+buildDefault p = build p (\res -> Default <| String.fromList res)
+buildName p = build p (\res -> Name <| String.fromList res)
+buildSymbol p = build p (\res -> Symbol <| String.fromList res)
+
+
+{--}
 rule =
   --> <head>
-  (wrapInList head)
+  (head)
   |>*>|
   --> <body>
   body
   |>*>|
   --> ’.’
-  (wrapInList (wrapInList (wrapInList (wrapInList period))))
+  (wrapInList (wrapInList (buildSymbol (wrapInList period))))
 
 head = atom
 
 body =
-  many0 [] (
+  build (many0 [] (
     --> ’:’
-    (wrapInList (wrapInList (wrapInList colon)))
+    (wrapInList(wrapInList (buildSymbol (wrapInList colon))))
     |>*>|
     --> <goal>
     goal
-  )
+  )) (\c-> List.concat c)
 
 goal =
   alt goalFirstBranch
@@ -198,60 +212,70 @@ goalSecondBranch =
   pattern
   |>*>|
   --> ’=’
-  (wrapInList (wrapInList equals))
+  (wrapInList (buildSymbol (wrapInList  equals)))
   |>*>|
   --> <pattern>
   pattern
 
 goalThirdBranch =
   -->  ’$’
-  (wrapInList (wrapInList  dollar))
+  (wrapInList (buildSymbol (wrapInList  dollar)))
   |>*>|
   --> <pattern> <pattern>
   twoPattern
   |>*>|
   --> ’-’
-  (wrapInList (wrapInList minus))
+  (wrapInList (buildSymbol (wrapInList  minus)))
   |>*>|
   --> <pattern> <pattern>
   twoPattern
 
 twoPattern = pattern |>*>| pattern
 
-
 name = string
 
 atom =
   --> name
-  (wrapInList (wrapInList name))
+  (wrapInList (wrapInList (buildName ( name))))
   |>*>|
-  -- { <pattern> }
+  --> { <pattern> }
   many0Pattern
   |>*>|
   --> ’-’
-  (wrapInList (wrapInList (wrapInList minus)))
+  (wrapInList (wrapInList (buildDefault (wrapInList minus))))
   |>*>|
   -- { <pattern> }
   many0Pattern
 
+
 pattern =
   (build(
   --> ’(’ { [ ’+’ ] <token> }
-  (wrapInList (wrapInList leftParenthesis) |>*>| many0TokenWithOptionalPlus)
+  (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0TokenWithOptionalPlus))
   >*>
   --> [ ’*’ <token> ]
-  optionalTokenWithAsterisk) (\(res1,res2)-> if (List.isEmpty res2) then res1 else res1++[res2]))
+  optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat result -} res1++[res2]))
   |>*>|
   --> ’)’
-  (wrapInList (wrapInList rightParenthesis))
+  ((wrapInList (buildDefault (wrapInList ( rightParenthesis)))))
 
 token = letter
 
 many0Pattern = many0 [] pattern
 
-many0TokenWithOptionalPlus = many0 [] (option (wrapInList plus) |>*>| (wrapInList token))
+many0TokenWithOptionalPlus = many0 [] (buildVar (option (wrapInList plus) |>*>| (wrapInList token)))
 
-optionalTokenWithAsterisk = option <| (wrapInList asterisk) |>*>| string
+optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
+
+parsedToString p = case p of
+  Ok r ->
+    let
+      res = List.head r
+    in
+        case res of
+          Nothing -> Variable ""
+          Just r2 -> Variable (String.fromList <| Tuple.first r2)
+  Err s -> Error s
 
 -- Helpers
 
