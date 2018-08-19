@@ -88,10 +88,21 @@ many0 l p inp =
       Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
       _ -> succeed l inp
 
+many1 : List b -> Parse a b -> Parse a (List b)
+many1 l p inp =
+  let
+    res = p inp
+  in
+    case res of
+      Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
+      Ok [] -> succeed l inp
+      Err errMsg -> fail ("Expecting list of " ++ errMsg) inp
+
+
 number : Parse Char (List Char)
 number = (list [] digit)
 
-string : Parse Char (List Char)
+--string : Parse Char (List Char)
 string = list [] letter
 
 list : List b -> Parse a b -> Parse a (List b)
@@ -148,6 +159,18 @@ closingCurlyBrace = symbol '}'
 
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
+
+isSpecialSymbol c
+   = c == ':'
+  || c == '$'
+  || c == '.'
+  || c == '='
+  || c == '-'
+  || c == '('
+  || c == ')'
+  || c == '+'
+  || c == '*'
+  -- || c == '\\'
 
 {- Language specific parser
 
@@ -256,11 +279,13 @@ pattern =
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
 
-token = letter
+token =  build (many1 [] (alt string specialSymbobolParser)) (\res -> List.foldr (++) [] res)
+
+specialSymbobolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->res1::res2::[]))
 
 many0Pattern = many0 [] pattern
 
-many0TokenWithOptionalPlus = many0 [] (buildVar (option (wrapInList plus) |>*>| (wrapInList token)))
+many0TokenWithOptionalPlus = many0 [] (buildVar (option (wrapInList (plus)) |>*>|  token))
 
 optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
 
