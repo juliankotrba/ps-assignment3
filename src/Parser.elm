@@ -279,9 +279,9 @@ pattern =
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
 
-token =  build (many1 [] (alt string specialSymbobolParser)) (\res -> List.foldr (++) [] res)
+token =  build (many1 [] (alt string specialSymbolParser)) (\res -> List.foldr (++) [] res)
 
-specialSymbobolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->res1::res2::[]))
+specialSymbolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->res1::res2::[]))
 
 many0Pattern = many0 [] pattern
 
