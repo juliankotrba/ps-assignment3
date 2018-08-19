@@ -234,7 +234,7 @@ name = string
 
 atom =
   --> name
-  (wrapInList (wrapInList (buildName ( name))))
+  (wrapInList (wrapInList (buildName (name))))
   |>*>|
   --> { <pattern> }
   many0Pattern
@@ -251,10 +251,10 @@ pattern =
   (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0TokenWithOptionalPlus))
   >*>
   --> [ ’*’ <token> ]
-  optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat result -} res1++[res2]))
+  optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat results -} res1++[res2]))
   |>*>|
   --> ’)’
-  ((wrapInList (buildDefault (wrapInList ( rightParenthesis)))))
+  wrapInList (buildDefault (wrapInList (rightParenthesis)))
 
 token = letter
 
@@ -263,16 +263,6 @@ many0Pattern = many0 [] pattern
 many0TokenWithOptionalPlus = many0 [] (buildVar (option (wrapInList plus) |>*>| (wrapInList token)))
 
 optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
-
-parsedToString p = case p of
-  Ok r ->
-    let
-      res = List.head r
-    in
-        case res of
-          Nothing -> Variable ""
-          Just r2 -> Variable (String.fromList <| Tuple.first r2)
-  Err s -> Error s
 
 -- Helpers
 
