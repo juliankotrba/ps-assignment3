@@ -276,7 +276,7 @@ atom =
 pattern =
   (build(
   --> ’(’ { [ ’+’ ] <token> }
-  (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0TokenWithOptionalPlusOrLiteral))
+  (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0PlusTokenOrLiteral))
   >*>
   --> [ ’*’ <token> ]
   optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat results -} res1++[res2]))
@@ -292,7 +292,7 @@ specialSymbolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) p
 
 many0Pattern = many0 [] pattern
 
-many0TokenWithOptionalPlusOrLiteral = many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
+many0PlusTokenOrLiteral = many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
 
 optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
 
