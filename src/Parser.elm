@@ -102,8 +102,11 @@ many1 l p inp =
 number : Parse Char (List Char)
 number = (list [] digit)
 
---string : Parse Char (List Char)
+string : Parse Char (List Char)
 string = list [] letter
+
+stringWithSpaces : Parse Char (List Char)
+stringWithSpaces = list [] (alt letter (symbol ' '))
 
 list : List b -> Parse a b -> Parse a (List b)
 list l p inp =
@@ -191,11 +194,13 @@ Syntax of the language:
 type SyntaxComponent
   = Default String
   | Variable String
+  | Literal String
   | Name String
   | Symbol String
   | Error String
 
 buildVar p = build p (\res -> Variable <| String.fromList res)
+buildLiteral p = build p (\res -> Literal <| String.fromList res)
 buildDefault p = build p (\res -> Default <| String.fromList res)
 buildName p = build p (\res -> Name <| String.fromList res)
 buildSymbol p = build p (\res -> Symbol <| String.fromList res)
@@ -271,7 +276,7 @@ atom =
 pattern =
   (build(
   --> ’(’ { [ ’+’ ] <token> }
-  (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0TokenWithOptionalPlus))
+  (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0TokenWithOptionalPlusOrLiteral))
   >*>
   --> [ ’*’ <token> ]
   optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat results -} res1++[res2]))
@@ -281,11 +286,13 @@ pattern =
 
 token =  build (many1 [] (alt string specialSymbolParser)) (\res -> List.foldr (++) [] res)
 
+literal = build (many1 [] (alt stringWithSpaces specialSymbolParser)) (\res -> List.foldr (++) [] res)
+
 specialSymbolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->res1::res2::[]))
 
 many0Pattern = many0 [] pattern
 
-many0TokenWithOptionalPlus = many0 [] (buildVar (option (wrapInList (plus)) |>*>|  token))
+many0TokenWithOptionalPlusOrLiteral = many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
 
 optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
 
