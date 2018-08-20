@@ -294,7 +294,7 @@ many0Pattern = many0 [] pattern
 
 many0PlusTokenOrLiteral = many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
 
-optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| string)))
+optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| stringWithSpaces)))
 
 -- Helpers
 
