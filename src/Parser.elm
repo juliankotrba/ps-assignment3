@@ -214,14 +214,14 @@ rule =
   body
   |>*>|
   --> ’.’
-  (wrapInList (wrapInList (buildSymbol (wrapInList period))))
+  (wrapInList (buildSymbol (wrapInList period)))
 
 head = atom
 
 body =
   build (many0 [] (
     --> ’:’
-    (wrapInList(wrapInList (buildSymbol (wrapInList colon))))
+    (wrapInList((buildSymbol (wrapInList colon))))
     |>*>|
     --> <goal>
     goal)) (\c-> List.concat c)
@@ -229,7 +229,7 @@ body =
 goal =
   alt goalFirstBranch
   <|
-  alt (wrapInList goalSecondBranch) (wrapInList goalThirdBranch)
+  alt goalSecondBranch goalThirdBranch
 
 goalFirstBranch = atom
 
@@ -262,7 +262,7 @@ name = string
 
 atom =
   --> name
-  (wrapInList (wrapInList (buildName (name))))
+  build ((wrapInList (wrapInList (buildName (name))))
   |>*>|
   --> { <pattern> }
   many0Pattern
@@ -271,7 +271,7 @@ atom =
   (wrapInList (wrapInList (buildDefault (wrapInList minus))))
   |>*>|
   -- { <pattern> }
-  many0Pattern
+  many0Pattern) (\c -> List.foldr (++) [] c)
 
 pattern =
   (build(
