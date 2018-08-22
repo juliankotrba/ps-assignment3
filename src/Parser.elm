@@ -197,6 +197,7 @@ type SyntaxComponent
   | Literal String
   | Name String
   | Symbol String
+  | Marked String
   | Error String
 
 buildVar p = build p (\res -> Variable <| String.fromList res)

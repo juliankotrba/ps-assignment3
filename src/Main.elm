@@ -2,7 +2,7 @@ import Html exposing (Html, div, input, textarea, text, span, button)
 import Html.Events exposing(onInput, onClick)
 import Html.Attributes exposing (..)
 import Json.Decode
-import Parser
+import Parser exposing (SyntaxComponent(..))
 import Http
 
 main : Program Never Model Msg
@@ -18,14 +18,14 @@ main =
 
 type alias Model =
   { plainSourceCode: String
-  , splitSourceCode: List (Html Msg)
+  , parsedSourceCode: List SyntaxComponent
   , url: String
   }
 
 init : (Model, Cmd Msg)
 init =
   ({ plainSourceCode = ""
-   , splitSourceCode = []
+   , parsedSourceCode = []
    , url = ""
   }
   , Cmd.none
@@ -44,26 +44,45 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Reset -> ({ model | plainSourceCode = "", splitSourceCode = [] }, Cmd.none)
+    Reset ->
+      ({ model | plainSourceCode = "", parsedSourceCode = [] }, Cmd.none)
+
     OnSpanClick innerText ->
-      ({ model | splitSourceCode = [] {- (markSameOccurrences innerText (splitSourceCode model.plainSourceCode )) -} }, Cmd.none)
+      ({ model | parsedSourceCode = (markSameOccurrences innerText (parse model.plainSourceCode)) }, Cmd.none)
 
     OnCodeInput changedCode ->
-      ({ model | plainSourceCode = changedCode, splitSourceCode = [(createMarkedSpan changedCode)]
-        {-List.map (\s->createUnmarkedSpan s) (splitSourceCode model.plainSourceCode)-} } , Cmd.none)
+      ({ model | plainSourceCode = changedCode, parsedSourceCode = (parse changedCode) } , Cmd.none)
 
-    OnUrlInput url ->  ({ model | url = url }, Cmd.none)
-    OnLoadCode -> (model, Http.send OnCodeLoaded (Http.getString model.url))
-    OnCodeLoaded (Ok code) -> update (OnCodeInput code) model -- ({ model | plainSourceCode = code }, Cmd.none)
-    OnCodeLoaded (Err _) -> ({ model | plainSourceCode = "Loading failed" }, Cmd.none)
+    OnUrlInput url ->
+      ({ model | url = url }, Cmd.none)
+
+    OnLoadCode ->
+      (model, Http.send OnCodeLoaded (Http.getString model.url))
+
+    OnCodeLoaded (Ok code) ->
+      update (OnCodeInput code) model
+
+    OnCodeLoaded (Err _) ->
+      ({ model | plainSourceCode = "Loading failed" }, Cmd.none)
 
 
 splitSourceCode : String -> List String
 splitSourceCode s = String.split " " s
                  |> List.map (\s -> s++" ")
 
-markSameOccurrences : String -> List String -> List (Html Msg)
-markSameOccurrences markedText l = List.map (\s -> if s==markedText then createMarkedSpan s else createUnmarkedSpan s) l
+markSameOccurrences : String -> (List SyntaxComponent) -> (List SyntaxComponent)
+markSameOccurrences markedText scs = List.map (\sc -> if (unwrap sc)==markedText then Marked (unwrap sc) else sc ) scs
+
+unwrap : SyntaxComponent -> String
+unwrap sc =
+  case sc of
+    Default s -> s
+    Variable s -> s
+    Literal s -> s
+    Name s -> s
+    Symbol s -> s
+    Marked s -> s
+    Error s -> s
 
 createMarkedSpan : String -> Html Msg
 createMarkedSpan t = span [ onSpanClick OnSpanClick, markedSpanStyle ] [text t]
@@ -84,7 +103,7 @@ view model = Html.div [ mainContainerStyle ] [
       ],
       textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput ] [ text model.plainSourceCode ]
     ],
-    div [ formattedCodeContainerStyle ] (model.splitSourceCode)
+    div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedSourceCode)
   ]
  ]
 
@@ -174,12 +193,41 @@ loadButtonStyle =
 
 -- Helper functions
 
-splitIntoRules s = splitAndKeep "." s
+parse s
+  =  splitAndKeep "." s
+  |> List.map String.trim
+  |> List.map String.toList
+  |> List.map (\r-> Parser.rule r)
+  |> List.map parsedRuleToSyntaxComponents
+  |> List.foldr (++) []
+
+parsedRuleToSyntaxComponents r
+  = case r of
+      Ok p ->
+        case p of
+          (sc, _)::_ -> sc
+          _ -> []
+      _ -> []
+
+syntaxComponentToSpan : SyntaxComponent -> Html Msg
+syntaxComponentToSpan sc
+  = case sc of
+      Default s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Variable s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Literal s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Name s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Symbol s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Error s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
+      Marked s -> span [ onSpanClick OnSpanClick, {- TODO -} markedSpanStyle ] [text s]
+
+splitIntoRules s = List.map String.trim <| splitAndKeep "." s
 
 splitAndKeep : String -> String -> List String
 splitAndKeep d s
-  = String.split d s |> List.filter ((/=) "") |> List.map (\s->s++d)
+  = String.split d s |> List.filter (\s-> (s /= "") && (s /= "\n")) |> List.map (\s->s++d)
 
+-- TODO: Remove later
+rules = splitIntoRules code
 code ="""
 main-:findFiles-(*files):showFiles(*files)-.
 showFiles(+x*x)-:showFile(+x)-:showFiles(*x)-.
