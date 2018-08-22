@@ -4,6 +4,7 @@ import Html.Attributes exposing (..)
 import Json.Decode
 import Parser exposing (SyntaxComponent(..))
 import Http
+import Regex
 
 main : Program Never Model Msg
 main =
@@ -84,12 +85,6 @@ unwrap sc =
     Marked s -> s
     Error s -> s
 
-createMarkedSpan : String -> Html Msg
-createMarkedSpan t = span [ onSpanClick OnSpanClick, markedSpanStyle ] [text t]
-
-createUnmarkedSpan : String -> Html Msg
-createUnmarkedSpan t = span [ onSpanClick OnSpanClick, unmarkedSpanStyle ] [text t]
-
 -- VIEW
 
 view : Model -> Html Msg
@@ -122,6 +117,34 @@ decodeInnerTextAttr =
 decodeValueAttr : Json.Decode.Decoder String
 decodeValueAttr =
   Json.Decode.at [ "target", "value" ] Json.Decode.string
+
+-- Helper functions
+
+parse s
+  =  String.lines s
+  |> List.map String.toList
+  |> List.map (\r-> Parser.rule r)
+  |> List.map parsedRuleToSyntaxComponents
+  |> List.foldr (++) []
+
+parsedRuleToSyntaxComponents r
+  = case r of
+      Ok p ->
+        case p of
+          (sc, _)::_ -> sc
+          _ -> []
+      _ -> []
+
+syntaxComponentToSpan : SyntaxComponent -> Html Msg
+syntaxComponentToSpan sc
+  = case sc of
+      Default s -> span [ onSpanClick OnSpanClick, defaultSpanStyle ] [text s]
+      Variable s -> span [ onSpanClick OnSpanClick, variableSpanStyle ] [text s]
+      Literal s -> span [ onSpanClick OnSpanClick, literalSpanStyle ] [text s]
+      Name s -> span [ onSpanClick OnSpanClick, nameSpanStyle ] [text s]
+      Symbol s -> span [ onSpanClick OnSpanClick, symbolSpanStyle ] [text s]
+      Error s -> span [ onSpanClick OnSpanClick, {- TODO -} defaultSpanStyle ] [text s]
+      Marked s -> span [ onSpanClick OnSpanClick, markedSpanStyle ] [text s]
 
 -- CSS styles
 
@@ -165,10 +188,38 @@ markedSpanStyle =
     , ("font-family", "monospace")
     ]
 
-unmarkedSpanStyle : Html.Attribute msg
-unmarkedSpanStyle =
+defaultSpanStyle : Html.Attribute msg
+defaultSpanStyle =
   style
     [ ("color", "white")
+    , ("font-family", "monospace")
+    ]
+
+variableSpanStyle : Html.Attribute msg
+variableSpanStyle =
+  style
+    [ ("color", "#FF9800")
+    , ("font-family", "monospace")
+    ]
+
+symbolSpanStyle : Html.Attribute msg
+symbolSpanStyle =
+  style
+    [ ("color", "#F48FB1")
+    , ("font-family", "monospace")
+    ]
+
+literalSpanStyle : Html.Attribute msg
+literalSpanStyle =
+  style
+    [ ("color", "#0091EA")
+    , ("font-family", "monospace")
+    ]
+
+nameSpanStyle : Html.Attribute msg
+nameSpanStyle =
+  style
+    [ ("color", "#00C853")
     , ("font-family", "monospace")
     ]
 
@@ -190,48 +241,3 @@ loadButtonStyle =
       [ ("width", "140px")
       , ("float", "right")
       ]
-
--- Helper functions
-
-parse s
-  =  splitAndKeep "." s
-  |> List.map String.trim
-  |> List.map String.toList
-  |> List.map (\r-> Parser.rule r)
-  |> List.map parsedRuleToSyntaxComponents
-  |> List.foldr (++) []
-
-parsedRuleToSyntaxComponents r
-  = case r of
-      Ok p ->
-        case p of
-          (sc, _)::_ -> sc
-          _ -> []
-      _ -> []
-
-syntaxComponentToSpan : SyntaxComponent -> Html Msg
-syntaxComponentToSpan sc
-  = case sc of
-      Default s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Variable s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Literal s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Name s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Symbol s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Error s -> span [ onSpanClick OnSpanClick, {- TODO -} unmarkedSpanStyle ] [text s]
-      Marked s -> span [ onSpanClick OnSpanClick, {- TODO -} markedSpanStyle ] [text s]
-
-splitIntoRules s = List.map String.trim <| splitAndKeep "." s
-
-splitAndKeep : String -> String -> List String
-splitAndKeep d s
-  = String.split d s |> List.filter (\s-> (s /= "") && (s /= "\n")) |> List.map (\s->s++d)
-
--- TODO: Remove later
-rules = splitIntoRules code
-code ="""
-main-:findFiles-(*files):showFiles(*files)-.
-showFiles(+x*x)-:showFile(+x)-:showFiles(*x)-.
-showFiles()-.
-findFiles-(*f):$(ls \\*\\.pdf)()-(*f)(*x).
-showFile(+f)-:$(xpdf+f)()-(*a)(+b).
-"""
