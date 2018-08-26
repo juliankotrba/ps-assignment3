@@ -85,6 +85,7 @@ unwrap sc =
     Marked s -> s
     Unparsed s -> s
     Error s -> s
+    Linebreak -> ""
 
 -- VIEW
 
@@ -127,17 +128,20 @@ parse s
   |> List.map String.toList
   |> List.map (\r-> Parser.rule r)
   |> List.map parsedRuleToSyntaxComponents
+  |> List.map (\scs -> List.append scs [Linebreak])
   |> List.foldr (++) []
 
 parsedRuleToSyntaxComponents r
   = case r of
       Ok p ->
         case p of
-          (sc, np)::_ -> sc ++ [Unparsed (String.fromList np)]
+          (sc, np)::_ -> sc ++ [Unparsed <| String.fromList np]
           _ -> []
       Err (errMsg, p, np) ->
         case p of
-          Just parsedSyntaxComponents -> parsedSyntaxComponents ++ [Error <| (" // " ++ errMsg ++ " -> " ++ String.fromList np)]
+          Just parsedSyntaxComponents ->
+            parsedSyntaxComponents ++ [Error <| (" // " ++ errMsg ++ " -> " ++ String.fromList np)]
+
           Nothing -> []
 
 syntaxComponentToSpan : SyntaxComponent -> Html Msg
@@ -151,6 +155,7 @@ syntaxComponentToSpan sc
       Unparsed s -> span [ onSpanClick OnSpanClick, unparsedSpanStyle ] [text s]
       Error s -> span [ onSpanClick OnSpanClick, errorSpanStyle ] [text s]
       Marked s -> span [ onSpanClick OnSpanClick, markedSpanStyle ] [text s]
+      Linebreak -> span [ linebreakSpanStyle ] [ ]
 
 -- CSS styles
 
@@ -239,9 +244,14 @@ errorSpanStyle =
 unparsedSpanStyle : Html.Attribute msg
 unparsedSpanStyle =
   style
-    [ ("color", "blue")
+    [ ("color", "white")
     , ("font-family", "monospace")
     ]
+
+linebreakSpanStyle : Html.Attribute msg
+linebreakSpanStyle =
+  style
+    [ ("display", "block") ]
 
 urlContainerStyle : Html.Attribute msg
 urlContainerStyle =

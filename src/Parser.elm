@@ -213,6 +213,7 @@ type SyntaxComponent
   | Marked String
   | Unparsed String
   | Error String
+  | Linebreak
 
 buildVar p = build p (\res -> Variable <| String.fromList res)
 buildLiteral p = build p (\res -> Literal <| String.fromList res)
