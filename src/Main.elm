@@ -148,7 +148,8 @@ parsedRuleToSyntaxComponents r
       Err (errMsg, p, np) ->
         case p of
           Just parsedSyntaxComponents ->
-            parsedSyntaxComponents ++ [Error <| (" // " ++ errMsg ++ " -> " ++ String.fromList np)]
+            parsedSyntaxComponents ++
+              [Error <| (" // " ++ errMsg ++ if List.isEmpty np then "" else " -> " ++ String.fromList np)]
 
           Nothing -> []
 
