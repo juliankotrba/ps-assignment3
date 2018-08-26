@@ -5,13 +5,15 @@ import Char
 -- Based on Simon Thompson
 -- Haskell – The Craft of Functional Programming
 
+{-| Parser definition
+The fist parameter is the input to be parsed. Most of the cases it will be a (List Char).
+The parser result consists of two parts:
+    Err (errorMessage, Maybe alreadyParsed, unparsedInput)
+    Ok List (parsed, unparsedInput)
+ -}
 type alias Parse a b  = List a -> Result (String, Maybe b, List a) (List (b, List a))
 
 -- Parser primitives
-unwrap r =
-  case r of
-    Ok p -> p
-    Err e -> e
 
 succeed : b -> Parse a b
 succeed val inp = Ok [(val, inp)]
