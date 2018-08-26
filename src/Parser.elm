@@ -295,7 +295,7 @@ pattern =
   (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0PlusTokenOrLiteral))
   >*>
   --> [ ’*’ <token> ]
-  optionalTokenWithAsterisk) (\(res1,res2)-> (Maybe.withDefault [(Error "change me1")] res1)++[(Maybe.withDefault (Error "change me2") res2)]))
+  optionalTokenWithAsterisk) (\(res1,res2)-> (Maybe.withDefault [(Error "")] res1)++[(Maybe.withDefault (Error "") res2)]))
   |>*>|
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
