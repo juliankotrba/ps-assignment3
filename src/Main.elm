@@ -19,14 +19,14 @@ main =
 
 type alias Model =
   { plainSourceCode: String
-  , parsedSourceCode: List SyntaxComponent
+  , parsedRules: List SyntaxComponent
   , url: String
   }
 
 init : (Model, Cmd Msg)
 init =
   ({ plainSourceCode = ""
-   , parsedSourceCode = []
+   , parsedRules = []
    , url = ""
   }
   , Cmd.none
@@ -46,13 +46,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Reset ->
-      ({ model | plainSourceCode = "", parsedSourceCode = [] }, Cmd.none)
+      ({ model | plainSourceCode = "", parsedRules = [] }, Cmd.none)
 
     OnSpanClick innerText ->
-      ({ model | parsedSourceCode = (markSameOccurrences innerText (parse model.plainSourceCode)) }, Cmd.none)
+      ({ model | parsedRules = (markSameOccurrences innerText (parse model.plainSourceCode)) }, Cmd.none)
 
     OnCodeInput changedCode ->
-      ({ model | plainSourceCode = changedCode, parsedSourceCode = (parse changedCode) } , Cmd.none)
+      ({ model | plainSourceCode = changedCode, parsedRules = (parse changedCode) } , Cmd.none)
 
     OnUrlInput url ->
       ({ model | url = url }, Cmd.none)
@@ -83,6 +83,7 @@ unwrap sc =
     Name s -> s
     Symbol s -> s
     Marked s -> s
+    Unparsed s -> s
     Error s -> s
 
 -- VIEW
@@ -98,7 +99,7 @@ view model = Html.div [ mainContainerStyle ] [
       ],
       textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput ] [ text model.plainSourceCode ]
     ],
-    div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedSourceCode)
+    div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedRules)
   ]
  ]
 
@@ -132,11 +133,11 @@ parsedRuleToSyntaxComponents r
   = case r of
       Ok p ->
         case p of
-          (sc, _)::_ -> sc
+          (sc, np)::_ -> sc ++ [Unparsed (String.fromList np)]
           _ -> []
       Err (errMsg, p, np) ->
         case p of
-          Just parsedSyntaxComponents -> parsedSyntaxComponents ++ [Error <| String.fromList np]
+          Just parsedSyntaxComponents -> parsedSyntaxComponents ++ [Error <| (" // " ++ errMsg ++ " -> " ++ String.fromList np)]
           Nothing -> []
 
 syntaxComponentToSpan : SyntaxComponent -> Html Msg
@@ -147,6 +148,7 @@ syntaxComponentToSpan sc
       Literal s -> span [ onSpanClick OnSpanClick, literalSpanStyle ] [text s]
       Name s -> span [ onSpanClick OnSpanClick, nameSpanStyle ] [text s]
       Symbol s -> span [ onSpanClick OnSpanClick, symbolSpanStyle ] [text s]
+      Unparsed s -> span [ onSpanClick OnSpanClick, unparsedSpanStyle ] [text s]
       Error s -> span [ onSpanClick OnSpanClick, errorSpanStyle ] [text s]
       Marked s -> span [ onSpanClick OnSpanClick, markedSpanStyle ] [text s]
 
@@ -230,7 +232,14 @@ nameSpanStyle =
 errorSpanStyle : Html.Attribute msg
 errorSpanStyle =
   style
-    [ ("color", "#red")
+    [ ("color", "red")
+    , ("font-family", "monospace")
+    ]
+
+unparsedSpanStyle : Html.Attribute msg
+unparsedSpanStyle =
+  style
+    [ ("color", "blue")
     , ("font-family", "monospace")
     ]
 

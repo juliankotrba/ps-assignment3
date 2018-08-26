@@ -63,7 +63,7 @@ infixr 5 >*>
             Ok [] -> Ok []
             Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (Just val1, p), np)
       Ok [] -> Ok []
-      Err (errMsg, p, np) -> Err (appendExpecting errMsg, Nothing, np) -- Just (p, Nothing)
+      Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (p, Nothing), np) -- Just (p, Nothing)
 
 build : Parse a b -> (b -> c) -> Parse a c
 build parser f inp =
@@ -211,6 +211,7 @@ type SyntaxComponent
   | Name String
   | Symbol String
   | Marked String
+  | Unparsed String
   | Error String
 
 buildVar p = build p (\res -> Variable <| String.fromList res)
@@ -219,10 +220,9 @@ buildDefault p = build p (\res -> Default <| String.fromList res)
 buildName p = build p (\res -> Name <| String.fromList res)
 buildSymbol p = build p (\res -> Symbol <| String.fromList res)
 
-{--}
 rule =
   --> <head>
-  (head)
+  head
   |>*>|
   --> <body>
   body
