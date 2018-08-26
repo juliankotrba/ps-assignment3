@@ -130,7 +130,6 @@ decodeValueAttr =
 
 -- Helper functions
 
--- TODO: Append unparsed part as (Unparsed up) span
 parse s
   =  String.lines s
   |> List.map String.toList
