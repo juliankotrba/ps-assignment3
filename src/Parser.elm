@@ -119,7 +119,7 @@ string : Parse Char (List Char)
 string = list [] letter
 
 stringWithSpaces : Parse Char (List Char)
-stringWithSpaces = list [] (alt letter (symbol ' '))
+stringWithSpaces = list [] (alt digit (alt letter (symbol ' ')))
 
 list : List b -> Parse a b -> Parse a (List b)
 list l parser inp =
