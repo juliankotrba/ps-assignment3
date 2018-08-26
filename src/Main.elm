@@ -1,4 +1,4 @@
-import Html exposing (Html, div, input, textarea, text, span, button)
+import Html exposing (Html, div, input, textarea, text, span, button, a)
 import Html.Events exposing(onInput, onClick)
 import Html.Attributes exposing (..)
 import Json.Decode
@@ -100,7 +100,15 @@ view model = Html.div [ mainContainerStyle ] [
       ],
       textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput ] [ text model.plainSourceCode ]
     ],
-    div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedRules)
+    div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedRules),
+    div [  ]
+            [ a
+                [ type_ "button"
+                , href <| "data:text/plain;charset=utf-8," ++ model.plainSourceCode
+                , downloadAs "code.txt"
+                ]
+                [ button [ downloadButtonStyle ] [ text "Save" ] ]
+            ]
   ]
  ]
 
@@ -189,6 +197,13 @@ formattedCodeContainerStyle =
   style
     [ ("text-align", "left")
     , ("color", "white")
+    ]
+
+downloadButtonStyle : Html.Attribute msg
+downloadButtonStyle =
+  style
+    [  ("width", "400px")
+    , ("margin-top", "25px")
     ]
 
 markedSpanStyle : Html.Attribute msg

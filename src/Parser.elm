@@ -63,7 +63,8 @@ infixr 5 >*>
             Ok [] -> Ok []
             Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (Just val1, p), np)
       Ok [] -> Ok []
-      Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (p, Nothing), np) -- Just (p, Nothing)
+      Err (errMsg, p, np) -> Err (appendExpecting errMsg, if p == Nothing then Nothing else Just (p, Nothing), np)
+
 
 build : Parse a b -> (b -> c) -> Parse a c
 build parser f inp =
