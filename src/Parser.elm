@@ -295,22 +295,32 @@ pattern =
   (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0PlusTokenOrLiteral))
   >*>
   --> [ ’*’ <token> ]
-  optionalTokenWithAsterisk) (\(res1,res2)-> (Maybe.withDefault [(Error "")] res1)++[(Maybe.withDefault (Error "") res2)]))
+  optionalTokenWithAsterisk) (\(res1,res2) -> (Maybe.withDefault [(Error "")] res1)++[(Maybe.withDefault (Error "") res2)]))
   |>*>|
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
 
 token =  build (many1 [] (alt string specialSymbolParser)) (\res -> List.foldr (++) [] res)
 
-literal = build (many1 [] (alt stringWithSpaces specialSymbolParser)) (\res -> List.foldr (++) [] res)
+literal =
+  build
+   (many1 [] (alt stringWithSpaces specialSymbolParser))
+   (\res -> List.foldr (++) [] res)
 
-specialSymbolParser = (build (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isEscapeSymbol >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->(Maybe.withDefault ' ' res1)::(Maybe.withDefault ' ' res2)::[]))
+specialSymbolParser =
+  build
+  (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isEscapeSymbol
+    >*>
+      (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol))
+  (\(res1,res2)->(Maybe.withDefault ' ' res1)::(Maybe.withDefault ' ' res2)::[])
 
 many0Pattern = many0 [] pattern
 
-many0PlusTokenOrLiteral = many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
+many0PlusTokenOrLiteral =
+  many0 [] (alt (buildLiteral literal) (buildVar (option (wrapInList (plus)) |>*>| token)))
 
-optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| stringWithSpaces)))
+optionalTokenWithAsterisk =
+  buildVar (option <| (((wrapInList asterisk) |>*>| stringWithSpaces)))
 
 -- Helpers
 
