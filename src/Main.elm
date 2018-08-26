@@ -120,6 +120,7 @@ decodeValueAttr =
 
 -- Helper functions
 
+-- TODO: Append unparsed part as (Unparsed up) span
 parse s
   =  String.lines s
   |> List.map String.toList
@@ -133,7 +134,10 @@ parsedRuleToSyntaxComponents r
         case p of
           (sc, _)::_ -> sc
           _ -> []
-      _ -> []
+      Err (errMsg, p, np) ->
+        case p of
+          Just parsedSyntaxComponents -> parsedSyntaxComponents ++ [Error <| String.fromList np]
+          Nothing -> []
 
 syntaxComponentToSpan : SyntaxComponent -> Html Msg
 syntaxComponentToSpan sc
@@ -143,7 +147,7 @@ syntaxComponentToSpan sc
       Literal s -> span [ onSpanClick OnSpanClick, literalSpanStyle ] [text s]
       Name s -> span [ onSpanClick OnSpanClick, nameSpanStyle ] [text s]
       Symbol s -> span [ onSpanClick OnSpanClick, symbolSpanStyle ] [text s]
-      Error s -> span [ onSpanClick OnSpanClick, {- TODO -} defaultSpanStyle ] [text s]
+      Error s -> span [ onSpanClick OnSpanClick, errorSpanStyle ] [text s]
       Marked s -> span [ onSpanClick OnSpanClick, markedSpanStyle ] [text s]
 
 -- CSS styles
@@ -220,6 +224,13 @@ nameSpanStyle : Html.Attribute msg
 nameSpanStyle =
   style
     [ ("color", "#00C853")
+    , ("font-family", "monospace")
+    ]
+
+errorSpanStyle : Html.Attribute msg
+errorSpanStyle =
+  style
+    [ ("color", "#red")
     , ("font-family", "monospace")
     ]
 

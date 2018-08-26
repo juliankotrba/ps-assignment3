@@ -5,15 +5,19 @@ import Char
 -- Based on Simon Thompson
 -- Haskell – The Craft of Functional Programming
 
-type alias Parse a b  = List a -> Result String (List (b, List a))
+type alias Parse a b  = List a -> Result (String, Maybe b, List a) (List (b, List a))
 
 -- Parser primitives
+unwrap r =
+  case r of
+    Ok p -> p
+    Err e -> e
 
 succeed : b -> Parse a b
 succeed val inp = Ok [(val, inp)]
 
-fail : String -> Parse a b
-fail errMsg _ = Err errMsg
+fail : String -> b -> Parse a b
+fail errMsg p np = Err (errMsg, Just p, np)
 
 symbol : a -> Parse a a
 symbol t l = spot ("Expecting: " ++ toString t) ((==) t) l
@@ -23,10 +27,11 @@ spot desc p l =
   case l of
     x::xs ->
       if p x then succeed x xs
-        else (fail desc l)
-    _ ->  fail desc l
+        else (Err (desc, Nothing, l))
+    _ ->  Err (desc, Nothing, l)--fail desc l
 
 -- Parser combinators
+-- test : goal <| String.toList "$()()-()("
 
 alt : Parse a b -> Parse a b -> Parse a b
 alt p1 p2 inp =
@@ -35,13 +40,15 @@ alt p1 p2 inp =
     res2 = p2 inp
   in
     case (res1,res2) of
-      (Err e1, Err e2) -> Err <| e1 ++ " || " ++ e2
+      (Err (e1, p1, np1), Err (e2, p2, np2)) ->
+        Err <| (((appendExpecting e1) ++ " || " ++ (appendExpecting e2)), p2, np2) -- TODO
+
       (Ok r1, Ok r2) -> Ok (r1++r2)
       (Ok r1, _) -> Ok r1
       (_, Ok r2) -> Ok r2
 
 infixr 5 >*>
-(>*>) : Parse a b -> Parse a c -> Parse a (b,c)
+(>*>) : Parse a b -> Parse a c -> Parse a (Maybe b, Maybe c)
 (>*>) p1 p2 inp=
   let
     res1 = p1 inp
@@ -52,21 +59,21 @@ infixr 5 >*>
           res2 = p2 rem1
         in
           case res2 of
-            Ok ((val2, rem2)::_) -> Ok [((val1, val2), rem2)]
+            Ok ((val2, rem2)::_) -> Ok [((Just val1, Just val2), rem2)]
             Ok [] -> Ok []
-            Err errMsg -> fail errMsg []
-      Err errMsg -> fail errMsg []
+            Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (Just val1, p), np)
       Ok [] -> Ok []
+      Err (errMsg, p, np) -> Err (appendExpecting errMsg, Nothing, np) -- Just (p, Nothing)
 
 build : Parse a b -> (b -> c) -> Parse a c
-build p f inp =
+build parser f inp =
   let
-    res = p inp
+    res = parser inp
   in
     case res of
       Ok ((val, rem)::_) -> Ok [(f val, rem)]
       Ok [] -> Ok []
-      Err errMsg -> fail errMsg []
+      Err (errMsg, p, np) -> Err (appendExpecting errMsg, Maybe.map f p, np)
 
 -- Parser
 
@@ -89,15 +96,20 @@ many0 l p inp =
       _ -> succeed l inp
 
 many1 : List b -> Parse a b -> Parse a (List b)
-many1 l p inp =
+many1 l parser inp =
   let
-    res = p inp
+    res = parser inp
   in
     case res of
-      Ok ((val, rem1)::_) -> list (List.append l [val]) p rem1
+      Ok ((val, rem1)::_) -> list (List.append l [val]) parser rem1
       Ok [] -> succeed l inp
-      Err errMsg -> fail ("Expecting list of " ++ errMsg) inp
+      Err (errMsg, p, np) -> Err ((appendExpecting errMsg), unwrapToListMaybe p, inp)
 
+unwrapToListMaybe : Maybe a -> Maybe (List a)
+unwrapToListMaybe ma =
+  case ma of
+    Just v -> Just [v]
+    _ -> Just []
 
 number : Parse Char (List Char)
 number = (list [] digit)
@@ -109,14 +121,14 @@ stringWithSpaces : Parse Char (List Char)
 stringWithSpaces = list [] (alt letter (symbol ' '))
 
 list : List b -> Parse a b -> Parse a (List b)
-list l p inp =
+list l parser inp =
   let
-    res = p inp
+    res = parser inp
   in
     case res of
-      Ok ((val, rem1)::_) -> list (l ++ [val]) p rem1
+      Ok ((val, rem1)::_) -> list (l ++ [val]) parser rem1
       Ok [] -> succeed l inp
-      Err errMsg -> if (List.isEmpty l) then fail ("Expecting list of " ++ errMsg) [] else succeed l inp
+      Err (errMsg, p, np) -> if (List.isEmpty l) then Err (("Expecting list of " ++ errMsg), Nothing, inp) else succeed l inp
 
 digit : Parse Char Char
 digit = spot "([0-9])" Char.isDigit
@@ -173,7 +185,8 @@ isSpecialSymbol c
   || c == ')'
   || c == '+'
   || c == '*'
-  -- || c == '\\'
+
+isEscapeSymbol c = c == '\\'
 
 {- Language specific parser
 
@@ -280,7 +293,7 @@ pattern =
   (((wrapInList (buildDefault(wrapInList leftParenthesis))) |>*>| many0PlusTokenOrLiteral))
   >*>
   --> [ ’*’ <token> ]
-  optionalTokenWithAsterisk) (\(res1,res2)-> {- TODO: Check if optional token is present. If not do not concat results -} res1++[res2]))
+  optionalTokenWithAsterisk) (\(res1,res2)-> (Maybe.withDefault [(Error "change me1")] res1)++[(Maybe.withDefault (Error "change me2") res2)]))
   |>*>|
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
@@ -289,7 +302,7 @@ token =  build (many1 [] (alt string specialSymbolParser)) (\res -> List.foldr (
 
 literal = build (many1 [] (alt stringWithSpaces specialSymbolParser)) (\res -> List.foldr (++) [] res)
 
-specialSymbolParser = (build (symbol '\\' >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->res1::res2::[]))
+specialSymbolParser = (build (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isEscapeSymbol >*> (spot ":, ., =, $, -, (, +, *, ) prefixed with \\" isSpecialSymbol)) (\(res1,res2)->(Maybe.withDefault ' ' res1)::(Maybe.withDefault ' ' res2)::[]))
 
 many0Pattern = many0 [] pattern
 
@@ -299,7 +312,11 @@ optionalTokenWithAsterisk = buildVar (option <| (((wrapInList asterisk) |>*>| st
 
 -- Helpers
 
+appendExpecting : String -> String
+appendExpecting s =
+  if (String.contains "Expecting" s) then s else ("Expecting: " ++ s)
+
 wrapInList p = build p (\c->[c])
 
 infixr 5 |>*>|
-(|>*>|) p1 p2 = build (p1 >*> p2) (\(res1,res2)->res1++res2)
+(|>*>|) p1 p2 = build (p1 >*> p2) (\(res1,res2)-> (Maybe.withDefault [] res1) ++ (Maybe.withDefault [] res2))
