@@ -4,7 +4,6 @@ import Html.Attributes exposing (..)
 import Json.Decode
 import Parser exposing (SyntaxComponent(..))
 import Http
-import Regex
 
 main : Program Never Model Msg
 main =
