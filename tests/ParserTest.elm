@@ -90,21 +90,21 @@ buildTests =
 listTests =
       describe "list function tests"
         [ test "Parse a number from \"123xyz\" should succeed" <|
-            \_ -> Parser.list [] Parser.digit (String.toList "123xyz") |> Expect.equal (Ok [(String.toList "123", String.toList "xyz")])
+            \_ -> Parser.list Parser.digit (String.toList "123xyz") |> Expect.equal (Ok [(String.toList "123", String.toList "xyz")])
         , test "Parse a number from \"xyz\" should fail" <|
-            \_ -> Parser.list [] Parser.digit (String.toList "xyz") |> Expect.equal (Err ("Expecting list of ([0-9])", Nothing, (String.toList "xyz")))
+            \_ -> Parser.list Parser.digit (String.toList "xyz") |> Expect.equal (Err ("Expecting list of ([0-9])", Nothing, (String.toList "xyz")))
         , test "Parse a string from \"xyz123\" should succeed" <|
-            \_ -> Parser.list [] Parser.letter (String.toList "xyz123") |> Expect.equal (Ok [(String.toList "xyz", String.toList "123")])
+            \_ -> Parser.list Parser.letter (String.toList "xyz123") |> Expect.equal (Ok [(String.toList "xyz", String.toList "123")])
         , test "Parse a string from \"123\" should fail" <|
-            \_ -> Parser.list [] Parser.letter (String.toList "123") |> Expect.equal (Err ("Expecting list of ([a-zA-Z])", Nothing, ['1','2','3']))
+            \_ -> Parser.list Parser.letter (String.toList "123") |> Expect.equal (Err ("Expecting list of ([a-zA-Z])", Nothing, ['1','2','3']))
         ]
 
 many0Tests =
       describe "optionalList function tests"
         [ test "Parse a string from \"123xyz\" should succeed with nothing parsed" <|
-            \_ -> Parser.many0 [] Parser.string (String.toList "123xyz") |> Expect.equal (Ok [([], String.toList "123xyz")])
+            \_ -> Parser.many0 Parser.string (String.toList "123xyz") |> Expect.equal (Ok [([], String.toList "123xyz")])
         , test "Parse a string from \"xyz132\" should succeed" <|
-            \_ -> Parser.many0 [] Parser.string (String.toList "xyz123") |> Expect.equal (Ok [([['x','y','z']],['1','2','3'])])
+            \_ -> Parser.many0 Parser.string (String.toList "xyz123") |> Expect.equal (Ok [([['x','y','z']],['1','2','3'])])
         {-, test "Parse multipe tokens from \"+x*y+z\" should succeed" <|
             \_ -> Parser.many0 [] Parser.token (String.toList "+x*y+z") |> Expect.equal  [([['+','x'],['*','y'],['+','z']],[])]-}
         ]
