@@ -260,19 +260,17 @@ rule =
   |>*>|
   --> <body>
   body
-  |>*>|
-  --> ’.’
-  (wrapInList (buildSymbol (wrapInList period)))
 
 head = atom
 
 body =
-  build (many0 (
-    --> ’:’
-    (wrapInList((buildSymbol (wrapInList colon))))
-    |>*>|
-    --> <goal>
-    goal)) (\c-> List.concat c)
+  alt
+    (wrapInList(buildSymbol (wrapInList period)))
+    (((build (many1 (((wrapInList(buildSymbol (wrapInList colon))))
+      |>*>| goal))(\c-> List.concat c))
+        |>*>| ((wrapInList(buildSymbol
+          (wrapInList period))))))
+
 
 goal =
   alt goalFirstBranch
