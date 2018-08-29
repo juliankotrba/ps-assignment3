@@ -56,7 +56,7 @@ alt p1 p2 inp =
   in
     case (res1,res2) of
       (Err (e1, p1, np1), Err (e2, p2, np2)) ->
-        Err <| (((appendExpecting e1) ++ " || " ++ (appendExpecting e2)), p2, np2)
+        Err <| (avoidDuplication (appendUnparsedPart (appendExpecting e1) np1) (appendUnparsedPart (appendExpecting e2) np2), p2, np2)
 
       (Ok r1, Ok r2) -> Ok (r1++r2)
       (Ok r1, _) -> Ok r1
@@ -80,9 +80,12 @@ infixr 5 >*>
           case res2 of
             Ok ((val2, rem2)::_) -> Ok [((Just val1, Just val2), rem2)]
             Ok [] -> Ok []
-            Err (errMsg, p, np) -> Err (appendExpecting errMsg, Just (Just val1, p), np)
+            Err (errMsg, p, np) ->
+              Err (appendUnparsedPart (appendExpecting errMsg) rem1, Just (Just val1, p), np)
+
       Ok [] -> Ok []
-      Err (errMsg, p, np) -> Err (appendExpecting errMsg, if p == Nothing then Nothing else Just (p, Nothing), np)
+      Err (errMsg, p, np) ->
+        Err (appendUnparsedPart (appendExpecting errMsg) np, if p == Nothing then Nothing else Just (p, Nothing), np)
 
 {-| Parser for transforming the parsed results
     build (spot "A digit" Char.isDigit) (\c -> String.fromChar c |> String.toInt) ['1', '2', '3'] == Ok ([(Ok 1,['2','3'])])
@@ -379,7 +382,18 @@ appendExpecting : String -> String
 appendExpecting s =
   if (String.contains "Expecting" s) then s else ("Expecting: " ++ s)
 
+appendUnparsedPart : String -> List a -> String
+appendUnparsedPart msg np = if (String.contains (toString np) msg) then msg else msg ++ " at " ++ (toString np)
+
+avoidDuplication : String -> String -> String
+avoidDuplication s1 s2 =
+  if s1 == s2 then s1 else (if (String.contains s2 s1) then s1 else (if (String.contains s1 s2) then s2 else (s1 ++ " || " ++ s2)))
+  
 wrapInList p = build p (\c->[c])
+
+anyListToString : List a -> String
+anyListToString l =
+  List.map (\o -> toString o) l |> List.foldr (++) ""
 
 infixr 5 |>*>|
 (|>*>|) p1 p2 = build (p1 >*> p2) (\(res1,res2)-> (Maybe.withDefault [] res1) ++ (Maybe.withDefault [] res2))
