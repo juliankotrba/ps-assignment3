@@ -45,8 +45,8 @@ spot desc p l =
 -- test : goal <| String.toList "$()()-()("
 
 {-| A parser for parsing either .. or ..
-     alt (symbol 'a') (symbol '1') ['1', 'a', 'b'] == Ok [('1',['a','b'])]
-     alt (symbol 'a') (symbol '1') ['a', '1', '2'] == Ok [('a',['1','2'])]
+    alt (symbol 'a') (symbol '1') ['1', 'a', 'b'] == Ok [('1',['a','b'])]
+    alt (symbol 'a') (symbol '1') ['a', '1', '2'] == Ok [('a',['1','2'])]
 -}
 alt : Parse a b -> Parse a b -> Parse a b
 alt p1 p2 inp =
@@ -270,7 +270,6 @@ body =
       |>*>| goal))(\c-> List.concat c))
         |>*>| ((wrapInList(buildSymbol
           (wrapInList period))))))
-
 
 goal =
   alt goalFirstBranch
