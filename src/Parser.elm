@@ -28,9 +28,10 @@ fail errMsg p np = Err (errMsg, Just p, np)
     symbol 1 [1, 2, 3] == Ok [(1,[2,3])]
 -}
 symbol : a -> Parse a a
-symbol t l = spot ("Expecting: " ++ toString t) ((==) t) l
+symbol s inp = spot ("Expecting: " ++ toString s) ((==) s) inp
 
 {-| A parser for parsing objects fulfilling a predicate
+The first parameter describes what is being parsed.
     spot "Expecting a digit" Char.isDigit ['1', 'y', 'z'] == Ok [('1',['y','z'])]
 -}
 spot : String -> (a -> Bool) -> Parse a a
@@ -42,7 +43,6 @@ spot desc p l =
     _ ->  Err (desc, Nothing, l)--fail desc l
 
 -- Parser combinators
--- test : goal <| String.toList "$()()-()("
 
 {-| A parser for parsing either .. or ..
     alt (symbol 'a') (symbol '1') ['1', 'a', 'b'] == Ok [('1',['a','b'])]
@@ -56,7 +56,7 @@ alt p1 p2 inp =
   in
     case (res1,res2) of
       (Err (e1, p1, np1), Err (e2, p2, np2)) ->
-        Err <| (((appendExpecting e1) ++ " || " ++ (appendExpecting e2)), p2, np2) -- TODO
+        Err <| (((appendExpecting e1) ++ " || " ++ (appendExpecting e2)), p2, np2)
 
       (Ok r1, Ok r2) -> Ok (r1++r2)
       (Ok r1, _) -> Ok r1
