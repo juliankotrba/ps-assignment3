@@ -383,17 +383,19 @@ appendExpecting s =
   if (String.contains "Expecting" s) then s else ("Expecting: " ++ s)
 
 appendUnparsedPart : String -> List a -> String
-appendUnparsedPart msg np = if (String.contains (toString np) msg) then msg else msg ++ " at " ++ (toString np)
+appendUnparsedPart msg np = if (String.endsWith ("]") msg) then msg else msg ++ " at [\"" ++ (anyListToString np) ++ "\"]"
 
 avoidDuplication : String -> String -> String
 avoidDuplication s1 s2 =
   if s1 == s2 then s1 else (if (String.contains s2 s1) then s1 else (if (String.contains s1 s2) then s2 else (s1 ++ " || " ++ s2)))
-  
+
 wrapInList p = build p (\c->[c])
 
 anyListToString : List a -> String
-anyListToString l =
-  List.map (\o -> toString o) l |> List.foldr (++) ""
+anyListToString l = List.map (\o -> toString o) l
+  |> List.foldr (++) ""
+  |> String.split "'"
+  |> String.join ""
 
 infixr 5 |>*>|
 (|>*>|) p1 p2 = build (p1 >*> p2) (\(res1,res2)-> (Maybe.withDefault [] res1) ++ (Maybe.withDefault [] res2))

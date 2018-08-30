@@ -56,13 +56,13 @@ spotTests =
 altTests =
     describe "alt function tests"
       [ test "Parse a digit or a letter from \"(xyz\" should fail" <|
-          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "(xyz") |> Expect.equal (Err ("Expecting: ([0-9]) || Expecting: ([a-zA-Z])", Nothing, ['(','x','y','z']))
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "(xyz") |> Expect.equal (Err ("Expecting: ([0-9]) at [\"(xyz\"] || Expecting: ([a-zA-Z]) at [\"(xyz\"]", Nothing, ['(','x','y','z']))
       , test "Parse a digit or a letter from \"xyz\" should succeed" <|
           \_ -> Parser.alt Parser.digit Parser.letter (String.toList "xyz") |> Expect.equal (Ok [('x',String.toList "yz")])
       , test "Parse a digit or a letter from \"1yz\" should succeed" <|
           \_ -> Parser.alt Parser.digit Parser.letter (String.toList "1yz") |> Expect.equal (Ok [('1',String.toList "yz")])
       , test "Parse a digit or a letter from an empty string should fail" <|
-          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal (Err ("Expecting: ([0-9]) || Expecting: ([a-zA-Z])", Nothing, []))
+          \_ -> Parser.alt Parser.digit Parser.letter (String.toList "") |> Expect.equal (Err ("Expecting: ([0-9]) at [\"\"] || Expecting: ([a-zA-Z]) at [\"\"]", Nothing, []))
       , test "Parse a number or a string from \"xyz123\" should succeed" <|
           \_ -> Parser.alt Parser.number Parser.string (String.toList "xyz123") |> Expect.equal (Ok [(String.toList "xyz", String.toList "123")])
       ]
@@ -72,7 +72,7 @@ seqTests =
       [ {- test "Parse a digit and a letter in this specific order from \"1(\" should fail" <|
           \_ -> Parser.digit >*> Parser.letter <| String.toList "1(" |> Expect.equal []
       , -} test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
-          \_ -> (Parser.letter >*> Parser.digit <| (String.toList "(1")) |> Expect.equal (Err ("Expecting: ([a-zA-Z])", Nothing, ['(','1']))
+          \_ -> (Parser.letter >*> Parser.digit <| (String.toList "(1")) |> Expect.equal (Err ("Expecting: ([a-zA-Z]) at [\"(1\"]", Nothing, ['(','1']))
       , test "Parse a opening curly brace and a digit in this specific order from \"{1\" should succeed" <|
           \_ -> (Parser.openingCurlyBrace >*> Parser.digit <| (String.toList "{1")) |> Expect.equal (Ok [((Just '{', Just '1'), String.toList "")])
       ]
@@ -112,7 +112,7 @@ many0Tests =
 tokenTests =
       describe "token function tests"
         [ test "Parse a token from \"_xyz123\" should fail" <|
-            \_ -> Parser.token (String.toList "_xyz123") |> Expect.equal (Parser.fail "Expecting list of ([a-zA-Z]) || Expecting: :, ., =, $, -, (, +, *, ) prefixed with \\" [] (String.toList "_xyz123"))
+            \_ -> Parser.token (String.toList "_xyz123") |> Expect.equal (Parser.fail "Expecting list of ([a-zA-Z]) at [\"_xyz123\"] || Expecting: :, ., =, $, -, (, +, *, ) prefixed with \\ at [\"_xyz123\"]" [] (String.toList "_xyz123"))
         , test "Parse a token from \"xyz123\" should succeed" <|
             \_ -> Parser.token (String.toList "xyz123") |> Expect.equal (Ok [(String.toList "xyz", String.toList "123")])
         , test "Parse a token from \"xyz\\$123\" should succeed" <|
