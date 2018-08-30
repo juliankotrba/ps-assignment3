@@ -62,6 +62,7 @@ update msg model =
     OnCodeLoaded (Ok code) ->
       update (OnCodeInput code) model
 
+
     OnCodeLoaded (Err _) ->
       ({ model | plainSourceCode = "Loading failed" }, Cmd.none)
 
@@ -97,7 +98,7 @@ view model = Html.div [ mainContainerStyle ] [
         input [ urlInputStyle, placeholder "Load a file over http ..", onInput OnUrlInput] [ ],
         button [ loadButtonStyle , onClick OnLoadCode ] [ text "Load" ]
       ],
-      textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput ] [ text model.plainSourceCode ]
+      textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput, value model.plainSourceCode ] [ ]
     ],
     div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedRules),
     div [  ]
