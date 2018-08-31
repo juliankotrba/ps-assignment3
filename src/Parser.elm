@@ -332,7 +332,7 @@ pattern =
   --> ’)’
   wrapInList (buildDefault (wrapInList (rightParenthesis)))
 
-token =  build (many1 (alt string specialSymbolParser)) (\res -> List.foldr (++) [] res)
+token = build (many1 (alt string specialSymbolParser)) (\res -> List.foldr (++) [] res)
 
 literal =
   build
@@ -354,7 +354,7 @@ many0PlusTokenOrLiteral =
 optionalTokenWithAsterisk =
   buildVar (option <| (((wrapInList asterisk) |>*>| stringWithSpaces)))
 
--- Helpers
+-- Helper function
 
 isLetter : Char -> Bool
 isLetter c = Char.isUpper c || Char.isLower c
@@ -383,11 +383,16 @@ appendExpecting s =
   if (String.contains "Expecting" s) then s else ("Expecting: " ++ s)
 
 appendUnparsedPart : String -> List a -> String
-appendUnparsedPart msg np = if (String.endsWith ("]") msg) then msg else msg ++ " at [\"" ++ (anyListToString np) ++ "\"]"
+appendUnparsedPart msg np =
+  if (String.endsWith ("]") msg) then msg else
+    msg ++ " at [\"" ++ (anyListToString np) ++ "\"]"
 
 avoidDuplication : String -> String -> String
 avoidDuplication s1 s2 =
-  if s1 == s2 then s1 else (if (String.contains s2 s1) then s1 else (if (String.contains s1 s2) then s2 else (s1 ++ " || " ++ s2)))
+  if s1 == s2 then s1 else
+    (if (String.contains s2 s1) then s1 else
+      (if (String.contains s1 s2) then s2
+        else (s1 ++ " || " ++ s2)))
 
 wrapInList p = build p (\c->[c])
 
