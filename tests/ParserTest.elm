@@ -19,12 +19,6 @@ suceedTests =
           \_ -> Parser.succeed 'x' ['x','y','z'] |> Expect.equal ((Ok ([('x',['x','y','z'])])))
       ]
 
-unwrap r =
-  case r of
-    Ok p -> p
-    Err e -> e
-
-
 failTests =
     describe "fail function tests"
       [ test "fail with input [] should fail" <|
@@ -69,9 +63,7 @@ altTests =
 
 seqTests =
     describe ">*> function tests"
-      [ {- test "Parse a digit and a letter in this specific order from \"1(\" should fail" <|
-          \_ -> Parser.digit >*> Parser.letter <| String.toList "1(" |> Expect.equal []
-      , -} test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
+      [ test "Parse a letter and a digit in this specific order from \"(1\" should fail" <|
           \_ -> (Parser.letter >*> Parser.digit <| (String.toList "(1")) |> Expect.equal (Err ("Expecting: ([a-zA-Z]) at [\"(1\"]", Nothing, ['(','1']))
       , test "Parse a opening curly brace and a digit in this specific order from \"{1\" should succeed" <|
           \_ -> (Parser.openingCurlyBrace >*> Parser.digit <| (String.toList "{1")) |> Expect.equal (Ok [((Just '{', Just '1'), String.toList "")])
@@ -105,8 +97,6 @@ many0Tests =
             \_ -> Parser.many0 Parser.string (String.toList "123xyz") |> Expect.equal (Ok [([], String.toList "123xyz")])
         , test "Parse a string from \"xyz132\" should succeed" <|
             \_ -> Parser.many0 Parser.string (String.toList "xyz123") |> Expect.equal (Ok [([['x','y','z']],['1','2','3'])])
-        {-, test "Parse multipe tokens from \"+x*y+z\" should succeed" <|
-            \_ -> Parser.many0 [] Parser.token (String.toList "+x*y+z") |> Expect.equal  [([['+','x'],['*','y'],['+','z']],[])]-}
         ]
 
 tokenTests =
