@@ -61,30 +61,8 @@ update msg model =
     OnCodeLoaded (Ok code) ->
       update (OnCodeInput code) model
 
-
     OnCodeLoaded (Err _) ->
       ({ model | plainSourceCode = "Loading failed" }, Cmd.none)
-
-
-splitSourceCode : String -> List String
-splitSourceCode s = String.split " " s
-                 |> List.map (\s -> s++" ")
-
-markSameOccurrences : String -> (List SyntaxComponent) -> (List SyntaxComponent)
-markSameOccurrences markedText scs = List.map (\sc -> if (unwrap sc)==markedText then Marked (unwrap sc) else sc ) scs
-
-unwrap : SyntaxComponent -> String
-unwrap sc =
-  case sc of
-    Default s -> s
-    Variable s -> s
-    Literal s -> s
-    Name s -> s
-    Symbol s -> s
-    Marked s -> s
-    Unparsed s -> s
-    Error s -> s
-    Linebreak -> ""
 
 -- VIEW
 
@@ -164,6 +142,26 @@ syntaxComponentToSpan sc
       Marked s -> span [ onSpanClick OnSpanClick, markedSpanStyle ] [text s]
       Linebreak -> span [ linebreakSpanStyle ] [ ]
 
+splitSourceCode : String -> List String
+splitSourceCode s = String.split " " s
+                 |> List.map (\s -> s++" ")
+
+markSameOccurrences : String -> (List SyntaxComponent) -> (List SyntaxComponent)
+markSameOccurrences markedText scs = List.map (\sc -> if (unwrap sc)==markedText then Marked (unwrap sc) else sc ) scs
+
+unwrap : SyntaxComponent -> String
+unwrap sc =
+  case sc of
+    Default s -> s
+    Variable s -> s
+    Literal s -> s
+    Name s -> s
+    Symbol s -> s
+    Marked s -> s
+    Unparsed s -> s
+    Error s -> s
+    Linebreak -> ""
+    
 -- CSS styles
 
 textareaStyle : Html.Attribute msg
