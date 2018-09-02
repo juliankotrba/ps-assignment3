@@ -44,8 +44,7 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Reset ->
-      ({ model | plainSourceCode = "", parsedRules = [] }, Cmd.none)
+    Reset -> init
 
     OnSpanClick innerText ->
       ({ model | parsedRules = (markSameOccurrences innerText (parse model.plainSourceCode)) }, Cmd.none)
@@ -93,7 +92,7 @@ view : Model -> Html Msg
 view model = Html.div [ mainContainerStyle ] [
   div [ containerStyle ]
   [
-    div [  ] [
+    div [ ] [
       div [] [
         input [ urlInputStyle, placeholder "Load a file over http ..", onInput OnUrlInput] [ ],
         button [ loadButtonStyle , onClick OnLoadCode ] [ text "Load" ]
@@ -101,7 +100,7 @@ view model = Html.div [ mainContainerStyle ] [
       textarea [  textareaStyle, rows 10, onKeyUp OnCodeInput, value model.plainSourceCode ] [ ]
     ],
     div [ formattedCodeContainerStyle ] (List.map syntaxComponentToSpan model.parsedRules),
-    div [  ]
+    div [ ]
             [ a
                 [ type_ "button"
                 , href <| "data:text/plain;charset=utf-8," ++ model.plainSourceCode
