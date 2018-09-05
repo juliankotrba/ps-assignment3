@@ -17,6 +17,7 @@ foo@bar:~$ elm-reactor
 elm-reactor 0.18.0
 Listening on http://localhost:8000
 ```
+After that open [http://localhost:8000/src/Main.elm](http://localhost:8000/src/Main.elm)
 
 The tests can be started with the following command inside the root directory
 
