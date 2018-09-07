@@ -34,8 +34,7 @@ init =
 -- Update
 
 type Msg
-  = Reset
-  | OnSpanClick String
+  = OnSpanClick String
   | OnCodeInput String
   | OnLoadCode
   | OnCodeLoaded (Result Http.Error String)
@@ -44,8 +43,6 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Reset -> init
-
     OnSpanClick innerText ->
       ({ model | parsedRules = (markSameOccurrences innerText (parse model.plainSourceCode)) }, Cmd.none)
 
