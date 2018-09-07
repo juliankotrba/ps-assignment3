@@ -147,10 +147,15 @@ splitSourceCode s = String.split " " s
                  |> List.map (\s -> s++" ")
 
 markSameOccurrences : String -> (List SyntaxComponent) -> (List SyntaxComponent)
-markSameOccurrences markedText scs = List.map (\sc -> if (unwrap sc)==markedText then Marked (unwrap sc) else sc ) scs
+markSameOccurrences markedText scs =
+  List.map (\sc ->
+    let
+      unwrapedValue = unwrapFromSyntaxComponent sc
+    in
+      if unwrapedValue==markedText then Marked unwrapedValue else sc ) scs
 
-unwrap : SyntaxComponent -> String
-unwrap sc =
+unwrapFromSyntaxComponent : SyntaxComponent -> String
+unwrapFromSyntaxComponent sc =
   case sc of
     Default s -> s
     Variable s -> s
@@ -161,7 +166,7 @@ unwrap sc =
     Unparsed s -> s
     Error s -> s
     Linebreak -> ""
-    
+
 -- CSS styles
 
 textareaStyle : Html.Attribute msg
