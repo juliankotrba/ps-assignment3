@@ -19,7 +19,17 @@ Listening on http://localhost:8000
 ```
 After that open [http://localhost:8000/src/Main.elm](http://localhost:8000/src/Main.elm)
 
-The tests can be started with the following command inside the root directory
+### Sample source code
+
+```
+main-:findFiles-(*files):showFiles(*files)-.
+showFiles(+x*x)-:showFile(+x)-:showFiles(*x)-.
+showFiles()-.
+findFiles-(*f):$(ls \*\.pdf)()-(*f)(*x).
+showFile(+f)-:$(xpdf+f)()-(*a)(+b).
+```
+
+## Tests
 
 ```
 foo@bar:~$ elm-test
